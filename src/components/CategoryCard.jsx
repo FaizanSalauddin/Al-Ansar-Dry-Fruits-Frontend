@@ -3,24 +3,29 @@ import { useNavigate } from "react-router-dom";
 function CategoryCard({ category }) {
   const navigate = useNavigate();
 
+  const handleClick = () => {
+    navigate(
+      `/products?category=${category.name.toLowerCase()}`
+    );
+  };
+
   return (
-    <button
-      onClick={() => navigate(`/products?category=${category.value}`)}
-      className="
-        bg-white 
-        rounded-xl 
-        border border-[#e4dccf]
-        py-6
-        text-center
-        text-[#2F4F3E]
-        font-semibold
-        hover:bg-[#2F4F3E]
-        hover:text-white
-        transition
-      "
+    <div
+      onClick={handleClick}
+      className="bg-white rounded-xl shadow cursor-pointer hover:shadow-lg transition"
     >
-      {category.name}
-    </button>
+      <img
+        src={category.image || "/category-placeholder.png"}
+        alt={category.name}
+        className="w-full h-28 object-cover rounded-t-xl"
+      />
+
+      <div className="p-3 text-center">
+        <h3 className="font-semibold text-[#2F4F3E]">
+          {category.name}
+        </h3>
+      </div>
+    </div>
   );
 }
 

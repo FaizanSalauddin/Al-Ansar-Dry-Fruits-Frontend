@@ -1,17 +1,21 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 import App from "./App";
-import "./index.css";
-
+import { BrowserRouter } from "react-router-dom";
 import { LoaderProvider } from "./context/LoaderContext";
+import { CartProvider } from "./context/CartContext";
+
+import "react-toastify/dist/ReactToastify.css";
+import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <LoaderProvider>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </LoaderProvider>
+    <BrowserRouter>
+      <LoaderProvider>
+        <CartProvider>
+          <App />
+        </CartProvider>
+      </LoaderProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );

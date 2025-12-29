@@ -1,47 +1,67 @@
 import { useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
+const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
+  const { addToCart, loadingProductId, cart } = useCart();
 
-function ProductCard({ product }) {
-    const navigate = useNavigate();
-    return (
-        <div
-            onClick={() => navigate(`/products/${product.id}`)}
-            className="cursor-pointer bg-white rounded-xl shadow-sm ..."
+  const isLoading = loadingProductId === product._id;
+
+  const isInCart = cart?.items?.some(
+    (item) => item.product?._id === product._id
+  );
+
+  const handleButtonClick = (e) => {
+    e.stopPropagation();
+
+    if (isInCart) {
+      navigate("/cart");
+    } else {
+      addToCart(product._id, 1);
+    }
+  };
+
+  return (
+    <div
+      onClick={() => navigate(`/product/${product._id}`)}
+      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
+    >
+      {/* IMAGE */}
+      <img
+        src={product.images?.[0]?.url || "/no-image.png"}
+        alt={product.name}
+        className="w-full h-40 object-cover"
+      />
+
+      {/* CONTENT */}
+      <div className="p-4">
+        <h3 className="font-semibold text-lg">{product.name}</h3>
+
+        <p className="text-green-600 font-bold mt-1">
+          ₹{product.discountedPrice || product.price}
+        </p>
+
+        {/* SINGLE SMART BUTTON */}
+        <button
+          disabled={isLoading}
+          onClick={handleButtonClick}
+          className={`
+            mt-4 w-full py-2 rounded-lg text-white transition
+            ${isInCart 
+              ? "bg-[#2F4F3E] hover:bg-[#243C30]" 
+              : "bg-black hover:bg-gray-900"}
+            disabled:opacity-50
+          `}
         >
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition">
-                {/* Image */}
-
-                <div className="h-40 bg-gray-100 flex items-center justify-center">
-                    <img
-                        src={product.image}
-                        alt={product.name}
-                        className="h-full object-contain"
-                    />
-                </div>
-
-                {/* Content */}
-                <div className="p-4">
-                    <h3 className="text-[#2F4F3E] font-semibold text-lg">
-                        {product.name}
-                    </h3>
-
-                    <p className="text-sm text-gray-600 mt-1">
-                        {product.weight}
-                    </p>
-
-                    <div className="mt-3 flex items-center justify-between">
-                        <span className="text-[#8C6A3D] font-bold">
-                            ₹{product.price}
-                        </span>
-
-                        <button className="bg-[#2F4F3E] text-white px-3 py-1.5 rounded-md text-sm hover:bg-[#243C30]">
-                            Add
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+          {isLoading
+            ? "Adding..."
+            : isInCart
+            ? "Go to Cart"
+            : "Add to Cart"}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default ProductCard;

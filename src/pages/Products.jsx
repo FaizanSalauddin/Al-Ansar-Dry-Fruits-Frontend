@@ -1,60 +1,58 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useLoader } from "../context/LoaderContext";
 import ProductCard from "../components/ProductCard";
-import products from "../data/products";
+import api from "../api/axios";
+import { useLoader } from "../context/LoaderContext";
 
-function Products() {
+const Products = () => {
   const { setLoading } = useLoader();
-  const [searchParams] = useSearchParams();
+  const [products, setProducts] = useState([]);
 
-  const category = searchParams.get("category");
+  // ✅ URL se category read kar rahe hain
+  const [searchParams] = useSearchParams();
+  const category = searchParams.get("category"); // almonds, dates, etc
 
   useEffect(() => {
-    setLoading(true);
-    const t = setTimeout(() => setLoading(false), 600);
-    return () => clearTimeout(t);
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+
+        // ✅ category ho to filter, warna all
+        const url = category
+          ? `/products?category=${category}`
+          : "/products";
+
+        const { data } = await api.get(url);
+        setProducts(data);
+      } catch (error) {
+        console.error("Fetch products error:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
   }, [setLoading, category]);
 
-  // Filter products by category (dummy logic)
-  const filteredProducts = useMemo(() => {
-    if (!category) return products;
-    return products.filter(p =>
-      p.name.toLowerCase().includes(category.toLowerCase())
-    );
-  }, [category]);
-
   return (
-    <div className="bg-[#F5EFE6] min-h-screen px-4 py-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-[#2F4F3E]">
-          {category ? `Category: ${category}` : "All Products"}
-        </h1>
-        <p className="text-gray-700 mt-1">
-          Premium quality dry fruits for everyday needs.
-        </p>
-      </div>
+    <div className="bg-[#F5EFE6] min-h-screen px-4 py-8">
+      <h1 className="text-2xl font-bold text-[#2F4F3E] mb-6 capitalize">
+        {category ? category : "All Products"}
+      </h1>
 
-      {/* Grid */}
-      <div
-        className="
-          grid grid-cols-1
-          sm:grid-cols-2
-          lg:grid-cols-4
-          gap-6
-        "
-      >
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <p className="text-gray-600">No products found.</p>
-        )}
-      </div>
+      {products.length === 0 ? (
+        <p className="text-center text-gray-600">
+          No products found
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <ProductCard key={product._id} product={product} />
+          ))}
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default Products;

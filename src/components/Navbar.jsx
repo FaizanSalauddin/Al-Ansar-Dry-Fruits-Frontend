@@ -1,11 +1,24 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 function Navbar() {
   const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { cart } = useCart();
+
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+  const cartCount = cart?.items?.length || 0;
+
+  const logoutHandler = () => {
+    localStorage.removeItem("userInfo");
+    localStorage.removeItem("shippingAddress");
+    navigate("/login");
+  };
 
   return (
-    <header className="bg-[#F5EFE6] border-b border-[#e4dccf]">
+    <header className="bg-[#F5EFE6] border-b border-[#e4dccf] sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* Brand */}
         <Link
@@ -17,29 +30,55 @@ function Navbar() {
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-6 text-[#2F4F3E] font-medium">
-          <Link to="/home" className="hover:underline">
-            Home
-          </Link>
-          <Link to="/products" className="hover:underline">
-            Products
-          </Link>
-          <Link to="/cart" className="hover:underline">
+          <Link to="/home">Home</Link>
+          <Link to="/products">Products</Link>
+
+          {/* CART WITH BADGE */}
+          <Link to="/cart" className="relative">
             Cart
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-3 bg-[#2F4F3E] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {cartCount}
+              </span>
+            )}
           </Link>
-          <Link
-            to="/login"
-            className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md hover:bg-[#243C30] transition"
-          >
-            Login
-          </Link>
+
+          {!userInfo ? (
+            <Link
+              to="/login"
+              className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md"
+            >
+              Login
+            </Link>
+          ) : (
+            <>
+              <Link to="/my-orders" className="hover:underline">
+                My Orders
+              </Link>
+
+              <button
+                onClick={logoutHandler}
+                className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md"
+              >
+                Logout
+              </button>
+            </>
+          )}
+
         </div>
 
         {/* Mobile Hamburger */}
         <button
           onClick={() => setOpen(!open)}
-          className="md:hidden text-[#2F4F3E]"
-          aria-label="Toggle menu"
+          className="md:hidden text-[#2F4F3E] relative"
         >
+          {/* Cart Badge ALWAYS visible */}
+          {cartCount > 0 && (
+            <span className="absolute -top-2 -right-2 bg-[#2F4F3E] text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+              {cartCount}
+            </span>
+          )}
+
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -67,16 +106,49 @@ function Navbar() {
             <Link onClick={() => setOpen(false)} to="/products">
               Products
             </Link>
-            <Link onClick={() => setOpen(false)} to="/cart">
-              Cart
-            </Link>
+
+            {/* CART WITH BADGE (mobile dropdown) */}
             <Link
               onClick={() => setOpen(false)}
-              to="/login"
-              className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md text-center"
+              to="/cart"
+              className="flex justify-between items-center"
             >
-              Login
+              <span>Cart</span>
+              {cartCount > 0 && (
+                <span className="bg-[#2F4F3E] text-white text-xs px-2 py-1 rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </Link>
+            {!userInfo ? (
+              <Link
+                onClick={() => setOpen(false)}
+                to="/login"
+                className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md text-center"
+              >
+                Login
+              </Link>
+            ) : (
+              <>
+                <Link
+                  onClick={() => setOpen(false)}
+                  to="/my-orders"
+                >
+                  My Orders
+                </Link>
+
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    logoutHandler();
+                  }}
+                  className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+
           </div>
         </div>
       )}
