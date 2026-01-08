@@ -30,6 +30,12 @@ import StockReport from "./admin/pages/StockReport";
 import EditProduct from "./admin/pages/EditProduct";
 import AddProduct from "./admin/pages/AddProduct";
 
+import AdminProtectedRoute from "./admin/routes/AdminProtectedRoute";
+import AdminAuthRedirect from "./admin/routes/AdminAuthRedirect";
+
+import AdminProfile from "./admin/pages/AdminProfile";
+
+
 function App() {
   return (
     <>
@@ -53,21 +59,28 @@ function App() {
           <Route path="/profile" element={<Profile />} />
         </Route>
 
-        {/* ADMIN LOGIN */}
-        <Route path="/admin/login" element={<AdminLogin />} />
-
-        {/* ADMIN PANEL */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="products/add" element={<AddProduct />} />
-          <Route path="products/:id/edit" element={<EditProduct />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="stock-report" element={<StockReport />} />
+        {/* ADMIN LOGIN (PUBLIC) */}
+        <Route element={<AdminAuthRedirect />}>
+          <Route path="/admin/login" element={<AdminLogin />} />
         </Route>
+
+        {/* ADMIN PANEL (PROTECTED) */}
+        <Route element={<AdminProtectedRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="products/add" element={<AddProduct />} />
+            <Route path="products/:id/edit" element={<EditProduct />} />
+            <Route path="orders" element={<AdminOrders />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="stock-report" element={<StockReport />} />
+            <Route path="profile" element={<AdminProfile />} />
+          </Route>
+        </Route>
+
       </Routes>
 
+      {/* ✅ ToastContainer MUST be outside Routes */}
       <ToastContainer
         position="top-center"
         autoClose={2000}

@@ -3,59 +3,40 @@ import api from "../api/axios";
 import { toast } from "react-toastify";
 
 
+
+
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(null);
-
-    // ✅ ADD THIS LINE (FIX)
     const [loading, setLoading] = useState(false);
-
     const [loadingProductId, setLoadingProductId] = useState(null);
 
-    // 🔄 Load cart from backend
+    // 🔐 Fetch cart (protected)
     const fetchCart = async () => {
         try {
-            setLoading(true);
             const { data } = await api.get("/cart");
             setCart(data.cart);
         } catch (error) {
-            console.error("Fetch cart error:", error.message);
-        } finally {
-            setLoading(false);
+            console.error(
+                "Fetch cart error:",
+                error.response?.data?.message || error.message
+            );
         }
     };
 
-    // ➕ Add to cart
     const addToCart = async (productId, qty = 1) => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-
         try {
             setLoadingProductId(productId);
-
-            const res = await api.post("/cart/add", {
+            const { data } = await api.post("/cart/add", {
                 productId,
                 quantity: qty,
             });
-
-            setCart(res.data.cart);
-            toast.success("Added to cart", {
-                style: {
-                    background: "#2F4F3E",
-                    color: "#fff",
-                },
-            });
-        } catch (err) {
-            if (err.response?.status === 401) {
-                toast.error("Please login first");
-            } else {
-                toast.error("Failed to add item");
-            }
+            setCart(data.cart);
+        } catch (error) {
+            console.error(
+                error.response?.data?.message || error.message
+            );
         } finally {
             setLoadingProductId(null);
         }
