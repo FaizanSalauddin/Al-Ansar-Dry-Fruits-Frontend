@@ -19,11 +19,19 @@ function ProductDetail() {
   );
 
   const handleButtonClick = () => {
-    if (isInCart) {
-      navigate("/cart");
-    } else {
-      addToCart(id, 1);
+    try {
+      if (isInCart) {
+        navigate("/cart");
+      } else {
+        addToCart(id, 1);
+      }
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Unable to add to cart"
+      );
     }
+
+
   };
 
   useEffect(() => {
@@ -87,8 +95,8 @@ function ProductDetail() {
             onClick={handleButtonClick}
             className={`
               mt-6 w-full py-3 rounded-lg text-white transition
-              ${isInCart 
-                ? "bg-[#2F4F3E] hover:bg-[#243C30]" 
+              ${isInCart
+                ? "bg-[#2F4F3E] hover:bg-[#243C30]"
                 : "bg-black hover:bg-gray-900"}
               disabled:opacity-50
             `}
@@ -96,8 +104,8 @@ function ProductDetail() {
             {isAdding
               ? "Adding..."
               : isInCart
-              ? "Go to Cart"
-              : "Add to Cart"}
+                ? "Go to Cart"
+                : "Add to Cart"}
           </button>
         </div>
       </div>

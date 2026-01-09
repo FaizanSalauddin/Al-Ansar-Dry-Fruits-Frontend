@@ -1,10 +1,8 @@
-import { useState } from "react";
+import { Link } from "react-router-dom";
 
 function Profile() {
   const user = JSON.parse(localStorage.getItem("userInfo"));
-  const [address] = useState(
-    JSON.parse(localStorage.getItem("shippingAddress")) || {}
-  );
+  const address = JSON.parse(localStorage.getItem("shippingAddress")) || null;
 
   return (
     <div className="min-h-screen bg-[#F5EFE6] px-4 py-8">
@@ -15,7 +13,6 @@ function Profile() {
           <div className="w-16 h-16 rounded-full bg-[#2F4F3E] text-white flex items-center justify-center text-2xl font-bold">
             {user?.name?.charAt(0)}
           </div>
-
           <div>
             <h2 className="text-2xl font-bold text-[#2F4F3E]">
               {user?.name}
@@ -24,7 +21,7 @@ function Profile() {
           </div>
         </div>
 
-        {/* GRID SECTION */}
+        {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           {/* PERSONAL INFO */}
@@ -46,72 +43,52 @@ function Profile() {
 
               <div className="flex justify-between">
                 <span className="text-gray-500">Account Type</span>
-                <span className="font-medium">
-                  {user?.role === "admin" ? "Admin" : "Customer"}
-                </span>
+                <span className="font-medium">Customer</span>
               </div>
             </div>
           </div>
 
           {/* ADDRESS */}
           <div className="bg-white rounded-2xl shadow p-6">
-            <h3 className="text-lg font-semibold text-[#2F4F3E] mb-4">
-              Saved Shipping Address
-            </h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-[#2F4F3E]">
+                Saved Shipping Address
+              </h3>
 
-            {address?.address ? (
+              <Link
+                to="/profile/edit-address"
+                className="inline-block mt-4 bg-[#2F4F3E] text-white px-4 py-2 rounded-lg"
+              >
+
+                {address ? "Edit Address" : "Add Address"}
+              </Link>
+            </div>
+
+            {address ? (
               <div className="text-sm text-gray-700 space-y-2">
-                <p>
-                  <span className="font-medium">Address:</span>{" "}
-                  {address.address}
-                </p>
-                <p>
-                  <span className="font-medium">City:</span> {address.city}
-                </p>
-                <p>
-                  <span className="font-medium">State:</span> {address.state}
-                </p>
-                <p>
-                  <span className="font-medium">Pincode:</span>{" "}
-                  {address.pincode}
-                </p>
-                <p>
-                  <span className="font-medium">Phone:</span>{" "}
-                  {address.phone}
-                </p>
+                <p><b>Name:</b> {address.name}</p>
+                <p><b>Address:</b> {address.address}</p>
+                <p><b>City:</b> {address.city}</p>
+                <p><b>State:</b> {address.state}</p>
+                <p><b>Pincode:</b> {address.pincode}</p>
+                <p><b>Phone:</b> {address.phone}</p>
               </div>
             ) : (
               <p className="text-sm text-gray-500">
-                No address saved yet. It will be auto-saved after checkout.
+                No address saved yet.
               </p>
             )}
           </div>
         </div>
 
-        {/* QUICK ACTIONS */}
+        {/* QUICK ACTION */}
         <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="text-lg font-semibold text-[#2F4F3E] mb-4">
-            Quick Actions
-          </h3>
-
-          <div className="flex flex-col sm:flex-row gap-4">
-            <a
-              href="/my-orders"
-              className="w-full text-center bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#244235] transition"
-            >
-              View My Orders
-            </a>
-
-            <button
-              onClick={() => {
-                localStorage.removeItem("shippingAddress");
-                window.location.reload();
-              }}
-              className="w-full border border-[#2F4F3E] text-[#2F4F3E] py-3 rounded-lg hover:bg-[#2F4F3E] hover:text-white transition"
-            >
-              Clear Saved Address
-            </button>
-          </div>
+          <a
+            href="/my-orders"
+            className="block text-center bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#244235]"
+          >
+            View My Orders
+          </a>
         </div>
 
       </div>

@@ -12,9 +12,9 @@ function MyOrders() {
       try {
         setLoading(true);
         const { data } = await api.get("/orders/myorders");
-        setOrders(data.orders);
+        setOrders(data.orders || []);
       } catch (err) {
-        console.error("Orders fetch error:", err.message);
+        console.error("My orders error:", err.message);
       } finally {
         setLoading(false);
       }
@@ -25,69 +25,97 @@ function MyOrders() {
 
   if (orders.length === 0) {
     return (
-      <div className="min-h-screen bg-[#F5EFE6] flex flex-col items-center justify-center">
-        <h2 className="text-xl font-semibold text-[#2F4F3E]">
-          No orders yet
-        </h2>
-        <Link
-          to="/products"
-          className="mt-4 bg-[#2F4F3E] text-white px-6 py-3 rounded-lg"
-        >
-          Shop Now
-        </Link>
+      <div className="min-h-screen bg-[#F5EFE6] flex items-center justify-center">
+        <p className="text-gray-600">No orders placed yet.</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F5EFE6] px-4 py-6">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-[#2F4F3E] mb-6">
+    <div className="min-h-screen bg-[#F5EFE6] px-4 py-8">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <h1 className="text-2xl font-bold text-[#2F4F3E]">
           My Orders
         </h1>
 
-        <div className="space-y-4">
-          {orders.map((order) => (
+        {orders.map((order) => {
+          const firstItem = order.orderItems[0];
+
+          return (
             <div
               key={order._id}
-              className="bg-white rounded-xl shadow p-4"
+              className="bg-white rounded-2xl shadow p-4 sm:p-6"
             >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-gray-500">
-                    Order ID
+              {/* TOP */}
+              <div className="flex gap-4 items-start">
+                {/* IMAGE */}
+                <img
+                  src={
+                    firstItem?.image
+                      ? firstItem.image
+                      : "https://via.placeholder.com/150"
+                  }
+                  alt={firstItem?.name}
+                  className="w-20 h-20 rounded-xl object-cover"
+                />
+
+
+                {/* INFO */}
+                <div className="flex-1">
+                  <h2 className="font-semibold text-[#2F4F3E]">
+                    {firstItem?.name}
+                    {order.orderItems.length > 1 &&
+                      ` + ${order.orderItems.length - 1} more`}
+                  </h2>
+
+                  <p className="text-sm text-gray-500 mt-1">
+                    Order ID: {order._id.slice(-8)}
                   </p>
-                  <p className="font-medium">
-                    #{order._id.slice(-6)}
+
+                  <p className="text-sm text-gray-500">
+                    Ordered on{" "}
+                    {new Date(order.createdAt).toLocaleDateString()}{" "}
+                    at{" "}
+                    {new Date(order.createdAt).toLocaleTimeString()}
                   </p>
                 </div>
 
+                {/* STATUS */}
                 <span
-                  className={`px-3 py-1 text-sm rounded-full ${
-                    order.orderStatus === "delivered"
+                  className={`text-xs px-3 py-1 rounded-full font-semibold
+                    ${order.orderStatus === "delivered"
                       ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
+                      : order.orderStatus === "shipped"
+                        ? "bg-blue-100 text-blue-700"
+                        : order.orderStatus === "out-for-delivery"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-700"
+                    }
+                  `}
                 >
-                  {order.orderStatus}
+                  {order.orderStatus || "Placed"}
                 </span>
               </div>
 
-              <div className="flex justify-between items-center mt-4">
-                <p className="font-semibold text-[#2F4F3E]">
-                  ₹{order.totalPrice}
+              {/* DIVIDER */}
+              <hr className="my-4" />
+
+              {/* FOOTER */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <p className="font-semibold text-sm">
+                  Total Paid: ₹{order.totalPrice}
                 </p>
 
                 <Link
                   to={`/orders/${order._id}`}
-                  className="text-sm text-green-700 font-medium"
+                  className="inline-block text-center border border-[#2F4F3E] text-[#2F4F3E] px-4 py-2 rounded-lg hover:bg-[#2F4F3E] hover:text-white transition"
                 >
-                  View Details →
+                  View Details
                 </Link>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

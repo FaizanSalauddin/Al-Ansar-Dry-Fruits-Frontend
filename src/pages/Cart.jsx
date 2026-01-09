@@ -66,11 +66,17 @@ function Cart() {
                                     <span>{item.quantity}</span>
 
                                     <button
+                                        disabled={item.quantity >= 5}
                                         onClick={() => increaseQty(item._id)}
-                                        className="px-3 py-1 border rounded"
+                                        className={`px-2 py-1 rounded 
+    ${item.quantity >= 5
+                                                ? "bg-gray-300 cursor-not-allowed"
+                                                : "bg-green-600 text-white"
+                                            }`}
                                     >
                                         +
                                     </button>
+
                                 </div>
                             </div>
 

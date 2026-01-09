@@ -15,6 +15,7 @@ import OrderDetail from "./pages/OrderDetail";
 import OrderSummary from "./pages/OrderSummary";
 import PlaceOrder from "./pages/PlaceOrder";
 import Profile from "./pages/Profile";
+import EditAddress from "./pages/EditAddress";
 
 /* LAYOUTS */
 import MainLayout from "./layouts/MainLayout";
@@ -57,6 +58,7 @@ function App() {
           <Route path="/order-summary" element={<OrderSummary />} />
           <Route path="/place-order" element={<PlaceOrder />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/profile/edit-address" element={<EditAddress />} />
         </Route>
 
         {/* ADMIN LOGIN (PUBLIC) */}
