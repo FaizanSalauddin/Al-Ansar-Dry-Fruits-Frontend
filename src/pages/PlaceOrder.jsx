@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
 
@@ -11,7 +11,7 @@ function PlaceOrder() {
 
   const placeOrder = async () => {
     try {
-      await api.post("/orders/from-cart", {
+      await userApi.post("/orders/from-cart", {
         shippingAddress: shipping,
         paymentMethod: "cod",
       });
@@ -20,8 +20,11 @@ function PlaceOrder() {
       fetchCart();
       navigate("/home");
     } catch (err) {
-      toast.error("Order failed");
+      toast.error(
+        err.response?.data?.message || "Order failed"
+      );
     }
+
   };
 
   return (

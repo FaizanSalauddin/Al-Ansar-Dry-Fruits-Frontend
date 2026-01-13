@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
+
 import { toast } from "react-toastify";
 
 const AdminLogin = () => {
@@ -11,13 +12,14 @@ const AdminLogin = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post("/admin/login", {
+      const { data } = await adminApi.post("/admin/login", {
         email,
         password,
       });
 
       localStorage.setItem("adminInfo", JSON.stringify(data));
       toast.success("Admin logged in");
+      localStorage.removeItem("userInfo");
       navigate("/admin");
     } catch (err) {
       toast.error(err.response?.data?.message || "Admin login failed");

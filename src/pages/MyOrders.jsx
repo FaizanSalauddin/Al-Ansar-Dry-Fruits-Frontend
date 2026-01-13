@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 import { useLoader } from "../context/LoaderContext";
 
 function MyOrders() {
@@ -11,7 +11,7 @@ function MyOrders() {
     const fetchOrders = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get("/orders/myorders");
+        const { data } = await userApi.get("/orders/myorders");
         setOrders(data.orders || []);
       } catch (err) {
         console.error("My orders error:", err.message);

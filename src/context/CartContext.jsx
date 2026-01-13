@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 import { toast } from "react-toastify";
+import { useAuth } from "./AuthContext";
+
 
 const CartContext = createContext();
 
@@ -8,56 +10,41 @@ export const CartProvider = ({ children }) => {
     const [cart, setCart] = useState(null);
     const [loading, setLoading] = useState(false);
     const [loadingProductId, setLoadingProductId] = useState(null);
+    const { user } = useAuth();
 
-    // 🔐 Get logged-in user
-    const [userInfo, setUserInfo] = useState(
-        JSON.parse(localStorage.getItem("userInfo"))
-    );
+
+
     useEffect(() => {
-        const syncUser = () => {
-            setUserInfo(JSON.parse(localStorage.getItem("userInfo")));
-        };
-
-        window.addEventListener("storage", syncUser);
-        syncUser(); // initial sync
-
-        return () => window.removeEventListener("storage", syncUser);
-    }, []);
+        fetchCart();
+    }, [user?.token]);
 
 
     // 🔄 Fetch cart ONLY if logged in
     const fetchCart = async () => {
-        if (!userInfo?.token) {
+        if (!user?.token) {
             setCart(null);
             return;
         }
 
         try {
-            const { data } = await api.get("/cart");
+            const { data } = await userApi.get("/cart");
             setCart(data.cart);
         } catch (error) {
-            const msg = error.response?.data?.message;
-
-            // Token invalid / expired
-            if (msg?.toLowerCase().includes("token")) {
-                setCart(null);
-                localStorage.removeItem("userInfo");
-            }
-
-            console.error("Fetch cart error:", msg || error.message);
+            setCart(null);
         }
     };
 
+
     // ➕ Add to cart (login required)
     const addToCart = async (productId, qty = 1) => {
-        if (!userInfo?.token) {
+        if (!user?.token) {
             toast.warning("Please login to add items to cart");
             return;
         }
 
         try {
             setLoadingProductId(productId);
-            const { data } = await api.post("/cart/add", {
+            const { data } = await userApi.post("/cart/add", {
                 productId,
                 quantity: qty,
             });
@@ -76,7 +63,7 @@ export const CartProvider = ({ children }) => {
     const removeFromCart = async (itemId) => {
         try {
             setLoading(true);
-            const { data } = await api.delete(`/cart/remove/${itemId}`);
+            const { data } = await userApi.delete(`/cart/remove/${itemId}`);
             setCart(data.cart);
         } catch (error) {
             toast.error("Failed to remove item");
@@ -88,7 +75,7 @@ export const CartProvider = ({ children }) => {
     // 🔼 Increase quantity
     const increaseQty = async (itemId) => {
         try {
-            const { data } = await api.put(`/cart/increase/${itemId}`);
+            const { data } = await userApi.put(`/cart/increase/${itemId}`);
             setCart(data.cart);
         } catch (error) {
             toast.error("Failed to update quantity");
@@ -98,7 +85,7 @@ export const CartProvider = ({ children }) => {
     // 🔽 Decrease quantity
     const decreaseQty = async (itemId) => {
         try {
-            const { data } = await api.put(`/cart/decrease/${itemId}`);
+            const { data } = await userApi.put(`/cart/decrease/${itemId}`);
             setCart(data.cart);
         } catch (error) {
             toast.error("Failed to update quantity");
@@ -108,7 +95,7 @@ export const CartProvider = ({ children }) => {
     // 🔄 Run when login/logout happens
     useEffect(() => {
         fetchCart();
-    }, [userInfo?.token]);
+    }, [user?.token]);
 
     return (
         <CartContext.Provider

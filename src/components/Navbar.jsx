@@ -1,25 +1,30 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+
+
 
 function Navbar() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
-  const { cart } = useCart();
 
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  const { user, logout } = useAuth();
+  const { cart, setCart } = useCart();
   const cartCount = cart?.items?.length || 0;
 
   const logoutHandler = () => {
-    localStorage.removeItem("userInfo");
-    localStorage.removeItem("shippingAddress");
+    logout();       // clears state + storage
+    setCart(null);  // clear cart UI
+    localStorage.removeItem("adminInfo");
     navigate("/login");
   };
+
 
   return (
     <header className="bg-[#F5EFE6] border-b border-[#e4dccf] sticky top-0 z-50">
       <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        
+
         {/* Brand */}
         <Link
           to="/home"
@@ -43,7 +48,7 @@ function Navbar() {
             )}
           </Link>
 
-          {!userInfo ? (
+          {!user ? (
             <Link
               to="/login"
               className="bg-[#2F4F3E] text-white px-4 py-2 rounded-md"
@@ -126,7 +131,7 @@ function Navbar() {
               )}
             </Link>
 
-            {!userInfo ? (
+            {!user ? (
               <Link
                 onClick={() => setOpen(false)}
                 to="/login"

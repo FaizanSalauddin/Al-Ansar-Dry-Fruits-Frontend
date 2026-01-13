@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
+
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
     const fetchDashboard = async () => {
-      const { data } = await api.get("/admin/dashboard");
+      const { data } = await adminApi.get("/admin/dashboard");
       setStats(data.stats);
     };
     fetchDashboard();

@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
 
   const fetchUsers = async () => {
-    const { data } = await api.get("/users"); // ✅ admin only
+    const { data } = await adminApi.get("/users"); // ✅ admin only
     setUsers(data.users);
   };
 
   const deleteUser = async (id) => {
-    await api.delete(`/users/${id}`);
+    await adminApi.delete(`/users/${id}`);
     fetchUsers();
   };
 

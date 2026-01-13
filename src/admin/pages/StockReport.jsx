@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
+
 
 const StockReport = () => {
   const [products, setProducts] = useState([]);
@@ -10,7 +11,7 @@ const StockReport = () => {
     const fetchStockReport = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get("/products/stock-report");
+        const { data } = await adminApi.get("/products/stock-report");
 
         // ✅ CORRECT KEYS
         setProducts(data.products || []);

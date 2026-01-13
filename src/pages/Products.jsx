@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import ProductCard from "../components/ProductCard";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 import { useLoader } from "../context/LoaderContext";
 
 const Products = () => {
@@ -22,7 +22,7 @@ const Products = () => {
           ? `/products?category=${category}`
           : "/products";
 
-        const { data } = await api.get(url);
+        const { data } = await userApi.get(url);
         setProducts(data);
       } catch (error) {
         console.error("Fetch products error:", error.message);

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -10,7 +10,7 @@ function AdminProducts() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const { data } = await api.get("/products");
+      const { data } = await adminApi.get("/products");
       setProducts(data);
     } catch (err) {
       toast.error("Failed to fetch products");
@@ -27,7 +27,7 @@ function AdminProducts() {
     if (!window.confirm("Delete this product?")) return;
 
     try {
-      await api.delete(`/products/${id}`);
+      await adminApi.delete(`/products/${id}`);
       toast.success("Product deleted");
       fetchProducts();
     } catch {
@@ -43,7 +43,7 @@ function AdminProducts() {
     }
 
     for (let p of out) {
-      await api.delete(`/products/${p._id}`);
+      await adminApi.delete(`/products/${p._id}`);
     }
 
     toast.success("Out of stock products removed");

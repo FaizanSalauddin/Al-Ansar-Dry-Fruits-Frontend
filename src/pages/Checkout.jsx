@@ -4,11 +4,11 @@ import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
 
 const INDIAN_STATES = [
-  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
-  "Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
-  "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Odisha",
-  "Punjab","Rajasthan","Tamil Nadu","Telangana",
-  "Uttar Pradesh","Uttarakhand","West Bengal",
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Odisha",
+  "Punjab", "Rajasthan", "Tamil Nadu", "Telangana",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal",
 ];
 
 function Checkout() {
@@ -34,6 +34,10 @@ function Checkout() {
 
   const submitHandler = (e) => {
     e.preventDefault();
+    if (!/^[6-9]\d{9}$/.test(shipping.phone)) {
+      toast.error("Enter valid 10-digit Indian phone number");
+      return;
+    }
 
     // ✅ Save address
     localStorage.setItem(

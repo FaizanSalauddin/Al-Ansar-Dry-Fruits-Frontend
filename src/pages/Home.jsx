@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLoader } from "../context/LoaderContext";
 import ProductCard from "../components/ProductCard";
 import CategoryCard from "../components/CategoryCard";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 
 function Home() {
   const { setLoading } = useLoader();
@@ -14,7 +14,7 @@ function Home() {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get("/products");
+        const { data } = await userApi.get("/products");
         setProducts(data);
       } catch (error) {
         console.error("Fetch products error:", error.message);
@@ -30,7 +30,7 @@ function Home() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const { data } = await api.get("/products/categories");
+        const { data } = await userApi.get("/products/categories");
         setCategories(data.categories || []);
       } catch (err) {
         console.error("Category fetch error:", err.message);

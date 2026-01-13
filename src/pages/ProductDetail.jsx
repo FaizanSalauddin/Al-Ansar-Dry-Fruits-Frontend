@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 import { useLoader } from "../context/LoaderContext";
 import { useCart } from "../context/CartContext";
 
@@ -38,7 +38,7 @@ function ProductDetail() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(`/products/${id}`);
+        const { data } = await userApi.get(`/products/${id}`);
         setProduct(data);
       } catch (error) {
         console.error("Product fetch error:", error.message);

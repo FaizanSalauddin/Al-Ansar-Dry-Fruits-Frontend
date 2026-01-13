@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
 import { toast } from "react-toastify";
 
 function EditProduct() {
@@ -23,7 +23,7 @@ function EditProduct() {
     const fetchProduct = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(`/products/${id}`);
+        const { data } = await adminApi.get(`/products/${id}`);
 
         setProduct({
           name: data.name || "",
@@ -72,7 +72,7 @@ function EditProduct() {
         formData.append("image", product.image);
       }
 
-      await api.put(`/products/${id}`, formData);
+      await adminApi.put(`/products/${id}`, formData);
 
       toast.success("✅ Product updated successfully");
       navigate("/admin/products");

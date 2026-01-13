@@ -1,56 +1,51 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../api/axios";
+import userApi from "../api/userApi";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
-const submitHandler = async (e) => {
-  e.preventDefault();
-  setError("");
+  const submitHandler = async (e) => {
+    e.preventDefault();
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { data } = await api.post("/auth/login", {
-      email,
-      password,
-    });
-
-    localStorage.setItem("userInfo", JSON.stringify(data));
-
-    toast.success("Login successful", {
-      style: {
-        background: "#2F4F3E",
-        color: "#fff",
-      },
-    });
-
-    // ⏳ IMPORTANT: delay navigation
-    setTimeout(() => {
-      navigate("/home");
-    }, 1200);
-
-  } catch (err) {
-    toast.error(
-      err.response?.data?.message || "Login failed",
-      {
+      const { data } = await userApi.post("/auth/login", {
+        email,
+        password,
+      });
+      login(data);
+      // ✅ ONLY THIS
+      toast.success("Login successful", {
         style: {
-          background: "#8B0000",
+          background: "#2F4F3E",
           color: "#fff",
         },
-      }
-    );
-  } finally {
-    setLoading(false);
-  }
-};
+      });
+      // 🔥 No fetchCart here
+      navigate("/home");
 
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Login failed",
+        {
+          style: {
+            background: "#8B0000",
+            color: "#fff",
+          },
+        }
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F5EFE6] px-4">
@@ -58,10 +53,6 @@ const submitHandler = async (e) => {
         <h2 className="text-2xl font-bold text-center text-[#2F4F3E]">
           Login
         </h2>
-
-        {error && (
-          <p className="mt-3 text-red-600 text-sm text-center">{error}</p>
-        )}
 
         <form onSubmit={submitHandler} className="mt-6 space-y-4">
           <input

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import api from "../../api/axios";
+import adminApi from "../../api/adminApi";
+
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -46,7 +47,7 @@ function AddProduct() {
     try {
       setLoading(true);
 
-      await api.post("/products", formData, {
+      await adminApi.post("/products", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
