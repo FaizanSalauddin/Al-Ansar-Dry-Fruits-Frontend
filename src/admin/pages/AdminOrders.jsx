@@ -12,7 +12,7 @@ function AdminOrders() {
   const fetchOrders = async () => {
     try {
       const { data } = await adminApi.get("/orders");
-      setOrders(data.orders);
+      setOrders(data.orders || []);
     } catch {
       toast.error("Failed to fetch orders");
     }
@@ -28,7 +28,7 @@ function AdminOrders() {
 
       await adminApi.put(`/orders/${selectedOrder._id}/status`, {
         status,
-        estimatedDelivery: eta, // future ready
+        estimatedDelivery: eta,
       });
 
       toast.success("Order updated");
@@ -42,50 +42,80 @@ function AdminOrders() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Orders Management</h1>
+    <div className="space-y-6">
+      <h1 className="text-2xl font-bold text-[#2F4F3E]">
+        Orders Management
+      </h1>
 
-      {/* TABLE */}
-      <div className="bg-white rounded shadow overflow-x-auto">
+      {/* ================= DESKTOP TABLE ================= */}
+      <div className="hidden md:block bg-white rounded-xl shadow overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-gray-100">
+          <thead className="bg-[#F5EFE6] text-[#2F4F3E]">
             <tr>
-              <th className="p-3">Order ID</th>
-              <th>User</th>
-              <th>Date</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Action</th>
+              <th className="p-3 text-left">Order ID</th>
+              <th className="p-3 text-left">Customer</th>
+              <th className="p-3">Date</th>
+              <th className="p-3">Total</th>
+              <th className="p-3">Status</th>
+              <th className="p-3">Action</th>
             </tr>
           </thead>
 
           <tbody>
             {orders.map((order) => (
-              <tr key={order._id} className="border-t">
-                <td className="p-3 font-mono text-xs">{order._id}</td>
-                <td>
-                  {order.user?.name}
-                  <br />
-                  <span className="text-xs text-gray-500">
-                    {order.user?.email}
-                  </span>
+              <tr
+                key={order._id}
+                className="
+                           border-t
+                           transition
+                           duration-200
+                          hover:bg-[#F5EFE6]
+                            hover:shadow-sm"
+              >
+                <td className="p-3 font-mono text-xs">
+                  {order._id}
                 </td>
-                <td>{order.createdAt?.slice(0, 10)}</td>
-                <td>₹{order.totalPrice}</td>
 
-                <td>
-                  <span className="px-2 py-1 rounded text-white text-xs bg-blue-600">
+                <td className="p-3">
+                  <div className="font-medium">
+                    {order.user?.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {order.user?.email}
+                  </div>
+                </td>
+
+                <td className="p-3 text-center">
+                  {order.createdAt?.slice(0, 10)}
+                </td>
+
+                <td className="p-3 text-center font-semibold">
+                  ₹{order.totalPrice}
+                </td>
+
+                <td className="p-3 text-center">
+                  <span className="px-3 py-1 rounded-full text-xs text-white bg-[#2F4F3E]">
                     {order.orderStatus}
                   </span>
                 </td>
 
-                <td>
+                <td className="p-3 text-center">
                   <button
                     onClick={() => {
                       setSelectedOrder(order);
                       setStatus(order.orderStatus);
                     }}
-                    className="bg-black text-white px-3 py-1 rounded text-xs"
+                    className="
+  bg-[#2F4F3E]
+  text-white
+  px-3 py-1
+  rounded
+  text-xs
+  transition
+  hover:bg-[#244235]
+  hover:shadow
+"
+
                   >
                     View Details
                   </button>
@@ -94,34 +124,131 @@ function AdminOrders() {
             ))}
           </tbody>
         </table>
+
+        {orders.length === 0 && (
+          <p className="p-4 text-center text-gray-500">
+            No orders found
+          </p>
+        )}
       </div>
 
-      {/* ORDER DETAILS MODAL */}
+      {/* ================= MOBILE CARDS ================= */}
+      <div className="md:hidden space-y-4">
+        {orders.map((order) => (
+          <div
+            key={order._id}
+            className="
+    bg-white
+    rounded-xl
+    shadow
+    p-4
+    space-y-3
+    transition
+    duration-200
+    hover:shadow-lg
+    hover:scale-[1.01]
+    active:scale-[0.99]
+  "
+          >
+
+            <div className="flex justify-between items-start">
+              <div>
+                <p className="text-xs text-gray-500">Order ID</p>
+                <p className="font-mono text-xs break-all">
+                  {order._id}
+                </p>
+              </div>
+
+              <span className="px-3 py-1 rounded-full text-xs text-white bg-[#2F4F3E]">
+                {order.orderStatus}
+              </span>
+            </div>
+
+            <div className="text-sm">
+              <p className="font-semibold">
+                {order.user?.name}
+              </p>
+              <p className="text-gray-500 text-xs">
+                {order.user?.email}
+              </p>
+            </div>
+
+            <div className="flex justify-between text-sm">
+              <span>Date</span>
+              <span>{order.createdAt?.slice(0, 10)}</span>
+            </div>
+
+            <div className="flex justify-between text-sm font-semibold">
+              <span>Total</span>
+              <span>₹{order.totalPrice}</span>
+            </div>
+
+            <button
+              onClick={() => {
+                setSelectedOrder(order);
+                setStatus(order.orderStatus);
+              }}
+             className="
+  w-full
+  bg-[#2F4F3E]
+  text-white
+  py-2
+  rounded-lg
+  text-sm
+  transition
+  hover:bg-[#244235]
+  active:scale-[0.98]
+"
+
+            >
+              View Order Details
+            </button>
+          </div>
+        ))}
+
+        {orders.length === 0 && (
+          <p className="text-center text-gray-500">
+            No orders found
+          </p>
+        )}
+      </div>
+
+      {/* ================= ORDER DETAILS MODAL ================= */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-xl p-6 rounded shadow relative">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
+          <div className="bg-white w-full max-w-xl p-6 rounded-xl shadow relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedOrder(null)}
-              className="absolute top-3 right-3 text-xl"
+             className="
+  absolute
+  top-3
+  right-3
+  text-xl
+  text-gray-500
+  hover:text-black
+  transition
+"
+
             >
               ✕
             </button>
 
-            <h2 className="text-xl font-bold mb-4">
+            <h2 className="text-xl font-bold text-[#2F4F3E] mb-4">
               Order Details
             </h2>
 
-            {/* INFO */}
-            <p><b>Order ID:</b> {selectedOrder._id}</p>
-            <p><b>Total:</b> ₹{selectedOrder.totalPrice}</p>
-            <p><b>Payment:</b> {selectedOrder.paymentMethod}</p>
-            <p><b>Paid:</b> {selectedOrder.isPaid ? "Yes" : "No"}</p>
+            <p className="text-sm"><b>Order ID:</b> {selectedOrder._id}</p>
+            <p className="text-sm"><b>Total:</b> ₹{selectedOrder.totalPrice}</p>
+            <p className="text-sm"><b>Payment:</b> {selectedOrder.paymentMethod}</p>
+            <p className="text-sm"><b>Paid:</b> {selectedOrder.isPaid ? "Yes" : "No"}</p>
 
             <hr className="my-3" />
 
-            {/* SHIPPING */}
-            <h3 className="font-semibold mb-1">Shipping Address</h3>
-            <p className="text-sm">
+            <h3 className="font-semibold text-[#2F4F3E] mb-1">
+              Shipping Address
+            </h3>
+
+            <p className="text-sm text-gray-700">
               {selectedOrder.shippingAddress.name}<br />
               {selectedOrder.shippingAddress.address}<br />
               {selectedOrder.shippingAddress.city},{" "}
@@ -132,18 +259,24 @@ function AdminOrders() {
 
             <hr className="my-3" />
 
-            {/* PRODUCTS */}
-            <h3 className="font-semibold mb-2">Products</h3>
+            <h3 className="font-semibold text-[#2F4F3E] mb-2">
+              Products
+            </h3>
+
             {selectedOrder.orderItems.map((item) => (
-              <div key={item.product} className="text-sm flex justify-between">
-                <span>{item.name} × {item.quantity}</span>
+              <div
+                key={item.product}
+                className="flex justify-between text-sm mb-1"
+              >
+                <span>
+                  {item.name} × {item.quantity}
+                </span>
                 <span>₹{item.price}</span>
               </div>
             ))}
 
             <hr className="my-3" />
 
-            {/* UPDATE STATUS */}
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
@@ -165,7 +298,7 @@ function AdminOrders() {
             <button
               disabled={loading}
               onClick={updateOrderStatus}
-              className="w-full bg-[#2F4F3E] text-white py-2 rounded"
+              className="w-full bg-[#2F4F3E] text-white py-2 rounded-lg"
             >
               {loading ? "Updating..." : "Update Order"}
             </button>
