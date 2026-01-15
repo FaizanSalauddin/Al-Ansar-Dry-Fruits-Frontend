@@ -26,20 +26,32 @@ function AdminOrders() {
     try {
       setLoading(true);
 
+      // 1️⃣ Update status
       await adminApi.put(`/orders/${selectedOrder._id}/status`, {
         status,
-        estimatedDelivery: eta,
       });
 
-      toast.success("Order updated");
+      // 2️⃣ Update estimated delivery date (ONLY if selected)
+      if (eta) {
+        await adminApi.put(
+          `/orders/${selectedOrder._id}/estimated-date`,
+          {
+            estimatedDeliveryDate: eta,
+          }
+        );
+      }
+
+      toast.success("Order updated successfully");
       setSelectedOrder(null);
+      setEta("");
       fetchOrders();
-    } catch {
+    } catch (err) {
       toast.error("Failed to update order");
     } finally {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -104,7 +116,13 @@ function AdminOrders() {
                     onClick={() => {
                       setSelectedOrder(order);
                       setStatus(order.orderStatus);
+                      setEta(
+                        order.estimatedDeliveryDate
+                          ? order.estimatedDeliveryDate.slice(0, 10)
+                          : ""
+                      );
                     }}
+
                     className="
   bg-[#2F4F3E]
   text-white
@@ -188,7 +206,7 @@ function AdminOrders() {
                 setSelectedOrder(order);
                 setStatus(order.orderStatus);
               }}
-             className="
+              className="
   w-full
   bg-[#2F4F3E]
   text-white
@@ -219,7 +237,7 @@ function AdminOrders() {
           <div className="bg-white w-full max-w-xl p-6 rounded-xl shadow relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedOrder(null)}
-             className="
+              className="
   absolute
   top-3
   right-3
@@ -288,13 +306,16 @@ function AdminOrders() {
               <option value="delivered">Delivered</option>
             </select>
 
+            <label className="text-sm font-medium text-gray-600">
+              Estimated Delivery Date
+            </label>
+
             <input
               type="date"
               value={eta}
               onChange={(e) => setEta(e.target.value)}
               className="w-full border p-2 rounded mb-3"
             />
-
             <button
               disabled={loading}
               onClick={updateOrderStatus}

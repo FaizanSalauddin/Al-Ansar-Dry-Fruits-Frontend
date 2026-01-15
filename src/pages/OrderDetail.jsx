@@ -47,10 +47,9 @@ function OrderDetail() {
 
           <span
             className={`inline-block mt-3 px-3 py-1 text-sm rounded-full capitalize
-              ${
-                order.orderStatus === "delivered"
-                  ? "bg-green-100 text-green-700"
-                  : order.orderStatus === "cancelled"
+              ${order.orderStatus === "delivered"
+                ? "bg-green-100 text-green-700"
+                : order.orderStatus === "cancelled"
                   ? "bg-red-100 text-red-700"
                   : "bg-yellow-100 text-yellow-700"
               }`}
@@ -76,6 +75,23 @@ function OrderDetail() {
             📞 {order.shippingAddress.phone}
           </p>
         </div>
+
+        {/* ESTIMATED DELIVERY */}
+        {order.estimatedDeliveryDate && (
+          <div className="bg-white p-5 rounded-xl shadow">
+            <h2 className="font-semibold text-lg mb-2 text-[#2F4F3E]">
+              Estimated Delivery
+            </h2>
+
+            <p className="text-sm text-gray-700">
+              🚚 Expected by{" "}
+              <span className="font-semibold">
+                {new Date(order.estimatedDeliveryDate).toDateString()}
+              </span>
+            </p>
+          </div>
+        )}
+
 
         {/* ITEMS */}
         <div className="bg-white p-5 rounded-xl shadow">

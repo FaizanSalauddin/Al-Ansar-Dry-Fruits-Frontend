@@ -61,12 +61,13 @@ function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {categories.map((cat) => (
             <CategoryCard
-              key={cat}                 // ✅ FIXED
+              key={cat}
               category={{
                 name: cat,
-                image: "/category-placeholder.png",
+                image: `/categories/${cat.toLowerCase()}.jpg`,
               }}
             />
+
           ))}
         </div>
       </section>

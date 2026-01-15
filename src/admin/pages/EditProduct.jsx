@@ -8,14 +8,14 @@ function EditProduct() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
 
   const [product, setProduct] = useState({
     name: "",
     description: "",
     price: "",
     stockQuantity: "",
-    image: null, // NEW IMAGE (optional)
-    oldImage: "", // EXISTING IMAGE
   });
 
   /* ================= FETCH PRODUCT ================= */
@@ -30,9 +30,9 @@ function EditProduct() {
           description: data.description || "",
           price: data.price || "",
           stockQuantity: data.stockQuantity || "",
-          image: null,
-          oldImage: data.images?.[0]?.url || "",
         });
+
+        setExistingImages(data.images || []);
       } catch (error) {
         toast.error("Failed to load product");
       } finally {
@@ -43,17 +43,39 @@ function EditProduct() {
     fetchProduct();
   }, [id]);
 
+  /* ================= IMAGE HANDLERS ================= */
+  const handleNewImages = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length + existingImages.length > 5) {
+      toast.error("Maximum 5 images allowed per product");
+      return;
+    }
+
+    setNewImages(files);
+  };
+
+  const removeExistingImage = async (imageId) => {
+    if (!window.confirm("Delete this image?")) return;
+
+    try {
+      await adminApi.delete(`/products/${id}/images/${imageId}`);
+      setExistingImages(existingImages.filter(img => img._id !== imageId));
+      toast.success("Image deleted");
+    } catch {
+      toast.error("Failed to delete image");
+    }
+  };
+
+  const removeNewImage = (index) => {
+    setNewImages(newImages.filter((_, i) => i !== index));
+  };
+
   /* ================= SUBMIT ================= */
   const submitHandler = async (e) => {
     e.preventDefault();
 
-    // BASIC VALIDATION
-    if (
-      !product.name ||
-      !product.description ||
-      !product.price ||
-      !product.stockQuantity
-    ) {
+    if (!product.name || !product.description || !product.price) {
       toast.error("All fields are required");
       return;
     }
@@ -67,20 +89,17 @@ function EditProduct() {
       formData.append("price", Number(product.price));
       formData.append("stockQuantity", Number(product.stockQuantity));
 
-      // IMAGE OPTIONAL
-      if (product.image) {
-        formData.append("image", product.image);
-      }
+      // 🔥 MUST BE "images"
+      newImages.forEach((img) => {
+        formData.append("images", img);
+      });
 
       await adminApi.put(`/products/${id}`, formData);
 
       toast.success("✅ Product updated successfully");
       navigate("/admin/products");
     } catch (error) {
-      console.error(error);
-      toast.error(
-        error.response?.data?.message || "Update failed"
-      );
+      toast.error(error.response?.data?.message || "Update failed");
     } finally {
       setLoading(false);
     }
@@ -93,16 +112,10 @@ function EditProduct() {
         Edit Product
       </h2>
 
-      {loading && (
-        <p className="text-center text-gray-500 mb-4">
-          Loading...
-        </p>
-      )}
+      {loading && <p className="text-gray-500 mb-3">Loading...</p>}
 
       <form onSubmit={submitHandler} className="space-y-4">
-        {/* NAME */}
         <input
-          type="text"
           placeholder="Product Name"
           value={product.name}
           onChange={(e) =>
@@ -111,10 +124,9 @@ function EditProduct() {
           className="w-full border px-4 py-2 rounded"
         />
 
-        {/* DESCRIPTION */}
         <textarea
-          placeholder="Product Description"
           rows="4"
+          placeholder="Product Description"
           value={product.description}
           onChange={(e) =>
             setProduct({ ...product, description: e.target.value })
@@ -122,7 +134,6 @@ function EditProduct() {
           className="w-full border px-4 py-2 rounded"
         />
 
-        {/* PRICE */}
         <input
           type="number"
           placeholder="Price"
@@ -133,52 +144,70 @@ function EditProduct() {
           className="w-full border px-4 py-2 rounded"
         />
 
-        {/* STOCK */}
         <input
           type="number"
           placeholder="Stock Quantity"
           value={product.stockQuantity}
           onChange={(e) =>
-            setProduct({
-              ...product,
-              stockQuantity: e.target.value,
-            })
+            setProduct({ ...product, stockQuantity: e.target.value })
           }
           className="w-full border px-4 py-2 rounded"
         />
 
-        {/* CURRENT IMAGE */}
-        {product.oldImage && (
+        {/* EXISTING IMAGES */}
+        {existingImages.length > 0 && (
           <div>
-            <p className="text-sm mb-1 text-gray-600">
-              Current Image
-            </p>
-            <img
-              src={product.oldImage}
-              alt="current"
-              className="w-32 h-32 object-cover rounded border"
-            />
+            <p className="text-sm text-gray-600 mb-1">Existing Images</p>
+            <div className="flex gap-3 flex-wrap">
+              {existingImages.map((img) => (
+                <div key={img._id} className="relative">
+                  <img
+                    src={img.url}
+                    alt="product"
+                    className="w-24 h-24 object-cover rounded border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeExistingImage(img._id)}
+                    className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* NEW IMAGE */}
+        {/* NEW IMAGES */}
         <div>
-          <p className="text-sm mb-1 text-gray-600">
-            Change Image (optional)
+          <p className="text-sm text-gray-600 mb-1">
+            Add New Images (optional)
           </p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) =>
-              setProduct({
-                ...product,
-                image: e.target.files[0],
-              })
-            }
-          />
+          <input type="file" multiple accept="image/*" onChange={handleNewImages} />
         </div>
 
-        {/* BUTTON */}
+        {newImages.length > 0 && (
+          <div className="flex gap-3 flex-wrap">
+            {newImages.map((img, i) => (
+              <div key={i} className="relative">
+                <img
+                  src={URL.createObjectURL(img)}
+                  alt="preview"
+                  className="w-24 h-24 object-cover rounded border"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeNewImage(i)}
+                  className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
         <button
           type="submit"
           disabled={loading}

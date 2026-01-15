@@ -1,8 +1,17 @@
 import { useState } from "react";
 import adminApi from "../../api/adminApi";
-
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+
+const CATEGORIES = [
+  "almonds",
+  "cashews",
+  "pistachios",
+  "walnuts",
+  "raisins",
+  "dates",
+  "other",
+];
 
 function AddProduct() {
   const navigate = useNavigate();
@@ -19,13 +28,30 @@ function AddProduct() {
     description: "",
   });
 
-  // 📸 Image select
+  /* ================= IMAGE HANDLER ================= */
   const imageHandler = (e) => {
-    setImages([...e.target.files]);
+    const files = Array.from(e.target.files);
+
+    if (files.length > 5) {
+      toast.error("You can upload maximum 5 images");
+      return;
+    }
+
+    setImages(files);
   };
 
+  const removeImage = (index) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  /* ================= SUBMIT ================= */
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    if (!product.category) {
+      toast.error("Please select a category");
+      return;
+    }
 
     if (images.length === 0) {
       toast.error("Please upload at least one image");
@@ -34,26 +60,22 @@ function AddProduct() {
 
     const formData = new FormData();
 
-    // Append product fields
-    Object.keys(product).forEach((key) => {
-      formData.append(key, product[key]);
+    Object.entries(product).forEach(([key, value]) => {
+      formData.append(key, value);
     });
 
-    // Append images
     images.forEach((img) => {
-      formData.append("images", img);
+      formData.append("images", img); // 🔥 MUST BE "images"
     });
 
     try {
       setLoading(true);
 
       await adminApi.post("/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
-      toast.success("Product added successfully");
+      toast.success("✅ Product added successfully");
       navigate("/admin/products");
     } catch (err) {
       toast.error(err.response?.data?.message || "Product add failed");
@@ -62,11 +84,14 @@ function AddProduct() {
     }
   };
 
+  /* ================= UI ================= */
   return (
-    <div className="p-4 max-w-xl">
-      <h1 className="text-2xl font-bold mb-4">Add Product</h1>
+    <div className="max-w-2xl mx-auto bg-white p-6 rounded-xl shadow">
+      <h1 className="text-2xl font-bold text-[#2F4F3E] mb-6">
+        Add New Product
+      </h1>
 
-      <form onSubmit={submitHandler} className="space-y-3">
+      <form onSubmit={submitHandler} className="space-y-4">
         <input
           required
           placeholder="Product Name"
@@ -74,18 +99,25 @@ function AddProduct() {
           onChange={(e) =>
             setProduct({ ...product, name: e.target.value })
           }
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-4 py-2 rounded"
         />
 
-        <input
+        {/* CATEGORY */}
+        <select
           required
-          placeholder="Category (almonds, dates, etc)"
           value={product.category}
           onChange={(e) =>
             setProduct({ ...product, category: e.target.value })
           }
-          className="w-full border px-3 py-2 rounded"
-        />
+          className="w-full border px-4 py-2 rounded"
+        >
+          <option value="">Select Category</option>
+          {CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
 
         <input
           required
@@ -95,7 +127,7 @@ function AddProduct() {
           onChange={(e) =>
             setProduct({ ...product, price: e.target.value })
           }
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-4 py-2 rounded"
         />
 
         <input
@@ -105,7 +137,7 @@ function AddProduct() {
           onChange={(e) =>
             setProduct({ ...product, weight: e.target.value })
           }
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-4 py-2 rounded"
         />
 
         <input
@@ -114,47 +146,63 @@ function AddProduct() {
           placeholder="Stock Quantity"
           value={product.stockQuantity}
           onChange={(e) =>
-            setProduct({ ...product, stockQuantity: e.target.value })
+            setProduct({
+              ...product,
+              stockQuantity: e.target.value,
+            })
           }
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-4 py-2 rounded"
         />
 
         <textarea
           required
-          placeholder="Description"
+          rows="4"
+          placeholder="Product Description"
           value={product.description}
           onChange={(e) =>
             setProduct({ ...product, description: e.target.value })
           }
-          className="w-full border px-3 py-2 rounded"
+          className="w-full border px-4 py-2 rounded"
         />
 
         {/* IMAGE UPLOAD */}
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={imageHandler}
-          className="w-full"
-        />
+        <div>
+          <p className="text-sm text-gray-600 mb-1">
+            Upload Images (max 5)
+          </p>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={imageHandler}
+          />
+        </div>
 
         {/* PREVIEW */}
         {images.length > 0 && (
-          <div className="flex gap-2 flex-wrap mt-2">
+          <div className="flex gap-3 flex-wrap">
             {images.map((img, i) => (
-              <img
-                key={i}
-                src={URL.createObjectURL(img)}
-                alt="preview"
-                className="w-20 h-20 object-cover rounded"
-              />
+              <div key={i} className="relative">
+                <img
+                  src={URL.createObjectURL(img)}
+                  alt="preview"
+                  className="w-24 h-24 object-cover rounded border"
+                />
+                <button
+                  type="button"
+                  onClick={() => removeImage(i)}
+                  className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full"
+                >
+                  ✕
+                </button>
+              </div>
             ))}
           </div>
         )}
 
         <button
           disabled={loading}
-          className="w-full bg-green-700 text-white py-2 rounded disabled:opacity-50"
+          className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg disabled:opacity-50"
         >
           {loading ? "Uploading..." : "Add Product"}
         </button>
