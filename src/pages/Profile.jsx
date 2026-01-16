@@ -1,5 +1,12 @@
 import { Link } from "react-router-dom";
 
+const logoutHandler = () => {
+  logout();
+  setCart(null);
+  localStorage.removeItem("adminInfo");
+  navigate("/login");
+};
+
 function Profile() {
   const user = JSON.parse(localStorage.getItem("userInfo"));
   const address = JSON.parse(localStorage.getItem("shippingAddress")) || null;
@@ -20,7 +27,14 @@ function Profile() {
             <p className="text-gray-600 text-sm">{user?.email}</p>
           </div>
         </div>
-
+        <div className="bg-white rounded-2xl shadow p-6">
+          <a
+            href="/my-orders"
+            className="block text-center bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#244235]"
+          >
+            My Orders
+          </a>
+        </div>
         {/* GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -82,14 +96,15 @@ function Profile() {
         </div>
 
         {/* QUICK ACTION */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <a
-            href="/my-orders"
-            className="block text-center bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#244235]"
-          >
-            View My Orders
-          </a>
-        </div>
+
+
+        <button
+          onClick={logoutHandler}
+          className="mt-6 w-full bg-red-600 text-white py-2 rounded-lg"
+        >
+          Logout
+        </button>
+
 
       </div>
     </div>

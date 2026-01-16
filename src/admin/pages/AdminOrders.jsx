@@ -9,6 +9,7 @@ function AdminOrders() {
   const [eta, setEta] = useState("");
   const [loading, setLoading] = useState(false);
 
+  /* ================= FETCH ================= */
   const fetchOrders = async () => {
     try {
       const { data } = await adminApi.get("/orders");
@@ -22,36 +23,75 @@ function AdminOrders() {
     fetchOrders();
   }, []);
 
+  /* ================= DATE HELPERS ================= */
+  const today = () => new Date().toISOString().slice(0, 10);
+  const tomorrow = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  };
+
+  /* ================= UPDATE ================= */
   const updateOrderStatus = async () => {
     try {
       setLoading(true);
 
-      // 1️⃣ Update status
-      await adminApi.put(`/orders/${selectedOrder._id}/status`, {
-        status,
-      });
+      await adminApi.put(`/orders/${selectedOrder._id}/status`, { status });
 
-      // 2️⃣ Update estimated delivery date (ONLY if selected)
-      if (eta) {
-        await adminApi.put(
-          `/orders/${selectedOrder._id}/estimated-date`,
-          {
-            estimatedDeliveryDate: eta,
-          }
-        );
+      if (status !== "delivered" && eta) {
+        await adminApi.put(`/orders/${selectedOrder._id}/estimated-date`, {
+          estimatedDeliveryDate: eta,
+        });
       }
 
-      toast.success("Order updated successfully");
+      toast.success("Order updated");
       setSelectedOrder(null);
       setEta("");
       fetchOrders();
-    } catch (err) {
-      toast.error("Failed to update order");
+    } catch {
+      toast.error("Update failed");
     } finally {
       setLoading(false);
     }
   };
 
+  /* ================= PAYMENT ================= */
+
+
+
+  const togglePaidStatus = async () => {
+    try {
+      setLoading(true);
+
+      const { data } = await adminApi.put(
+        `/orders/${selectedOrder._id}/payment-status`,
+        {
+          isPaid: !selectedOrder.isPaid,
+        }
+      );
+
+      toast.success(data.message);
+      setSelectedOrder(data.order);
+      fetchOrders();
+    } catch (err) {
+      toast.error("Failed to update payment status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ================= BADGE ================= */
+  const badge = (s) => {
+    const map = {
+      pending: "bg-gray-200 text-gray-700",
+      confirmed: "bg-blue-100 text-blue-700",
+      "in-transit": "bg-yellow-100 text-yellow-700",
+      "deliver-today": "bg-orange-100 text-orange-700",
+      "deliver-tomorrow": "bg-purple-100 text-purple-700",
+      delivered: "bg-green-100 text-green-700",
+    };
+    return map[s] || "bg-gray-100 text-gray-600";
+  };
 
   return (
     <div className="space-y-6">
@@ -59,214 +99,114 @@ function AdminOrders() {
         Orders Management
       </h1>
 
-      {/* ================= DESKTOP TABLE ================= */}
-      <div className="hidden md:block bg-white rounded-xl shadow overflow-x-auto">
+      {/* ================= DESKTOP ================= */}
+      <div className="hidden md:block bg-white rounded-xl shadow">
         <table className="w-full text-sm">
-          <thead className="bg-[#F5EFE6] text-[#2F4F3E]">
+          <thead className="bg-[#F5EFE6]">
             <tr>
-              <th className="p-3 text-left">Order ID</th>
-              <th className="p-3 text-left">Customer</th>
-              <th className="p-3">Date</th>
-              <th className="p-3">Total</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Action</th>
+              <th className="p-3 text-left">Order</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th />
             </tr>
           </thead>
 
           <tbody>
-            {orders.map((order) => (
-              <tr
-                key={order._id}
-                className="
-                           border-t
-                           transition
-                           duration-200
-                          hover:bg-[#F5EFE6]
-                            hover:shadow-sm"
-              >
-                <td className="p-3 font-mono text-xs">
-                  {order._id}
-                </td>
-
-                <td className="p-3">
-                  <div className="font-medium">
-                    {order.user?.name}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {order.user?.email}
-                  </div>
-                </td>
-
-                <td className="p-3 text-center">
-                  {order.createdAt?.slice(0, 10)}
-                </td>
-
-                <td className="p-3 text-center font-semibold">
-                  ₹{order.totalPrice}
-                </td>
-
-                <td className="p-3 text-center">
-                  <span className="px-3 py-1 rounded-full text-xs text-white bg-[#2F4F3E]">
-                    {order.orderStatus}
+            {orders.map((o) => (
+              <tr key={o._id} className="border-t">
+                <td className="p-3 font-mono text-xs">{o._id}</td>
+                <td>{o.user?.name}</td>
+                <td>{o.createdAt?.slice(0, 10)}</td>
+                <td>₹{o.totalPrice}</td>
+                <td>
+                  <span className={`px-3 py-1 rounded-full text-xs ${badge(o.orderStatus)}`}>
+                    {o.orderStatus}
                   </span>
                 </td>
-
-                <td className="p-3 text-center">
+                <td>
                   <button
                     onClick={() => {
-                      setSelectedOrder(order);
-                      setStatus(order.orderStatus);
-                      setEta(
-                        order.estimatedDeliveryDate
-                          ? order.estimatedDeliveryDate.slice(0, 10)
-                          : ""
-                      );
+                      setSelectedOrder(o);
+                      setStatus(o.orderStatus);
+                      setEta(o.estimatedDeliveryDate?.slice(0, 10) || "");
                     }}
-
-                    className="
-  bg-[#2F4F3E]
-  text-white
-  px-3 py-1
-  rounded
-  text-xs
-  transition
-  hover:bg-[#244235]
-  hover:shadow
-"
-
+                    className="bg-[#2F4F3E] text-white px-3 py-1 rounded text-xs"
                   >
-                    View Details
+                    View
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {orders.length === 0 && (
-          <p className="p-4 text-center text-gray-500">
-            No orders found
-          </p>
-        )}
       </div>
 
-      {/* ================= MOBILE CARDS ================= */}
+      {/* ================= MOBILE ================= */}
       <div className="md:hidden space-y-4">
-        {orders.map((order) => (
-          <div
-            key={order._id}
-            className="
-    bg-white
-    rounded-xl
-    shadow
-    p-4
-    space-y-3
-    transition
-    duration-200
-    hover:shadow-lg
-    hover:scale-[1.01]
-    active:scale-[0.99]
-  "
-          >
-
-            <div className="flex justify-between items-start">
-              <div>
-                <p className="text-xs text-gray-500">Order ID</p>
-                <p className="font-mono text-xs break-all">
-                  {order._id}
-                </p>
-              </div>
-
-              <span className="px-3 py-1 rounded-full text-xs text-white bg-[#2F4F3E]">
-                {order.orderStatus}
+        {orders.map((o) => (
+          <div key={o._id} className="bg-white p-4 rounded-xl shadow">
+            <div className="flex justify-between">
+              <p className="text-xs font-mono">{o._id.slice(-8)}</p>
+              <span className={`px-2 py-1 text-xs rounded ${badge(o.orderStatus)}`}>
+                {o.orderStatus}
               </span>
             </div>
-
-            <div className="text-sm">
-              <p className="font-semibold">
-                {order.user?.name}
-              </p>
-              <p className="text-gray-500 text-xs">
-                {order.user?.email}
-              </p>
+            <div className="flex justify-between pt-3 pb-3">
+              <p className="mt-2 font-semibold">{o.user?.name}</p>
+              <span className="text-sm font-semibold">{o.createdAt?.slice(0, 10)}</span>
             </div>
-
-            <div className="flex justify-between text-sm">
-              <span>Date</span>
-              <span>{order.createdAt?.slice(0, 10)}</span>
-            </div>
-
-            <div className="flex justify-between text-sm font-semibold">
-              <span>Total</span>
-              <span>₹{order.totalPrice}</span>
-            </div>
+            <p className="text-sm">₹{o.totalPrice}</p>
 
             <button
               onClick={() => {
-                setSelectedOrder(order);
-                setStatus(order.orderStatus);
+                setSelectedOrder(o);
+                setStatus(o.orderStatus);
+                setEta(o.estimatedDeliveryDate?.slice(0, 10) || "");
               }}
-              className="
-  w-full
-  bg-[#2F4F3E]
-  text-white
-  py-2
-  rounded-lg
-  text-sm
-  transition
-  hover:bg-[#244235]
-  active:scale-[0.98]
-"
-
+              className="mt-3 w-full bg-[#2F4F3E] text-white py-2 rounded"
             >
-              View Order Details
+              View Details
             </button>
           </div>
         ))}
-
-        {orders.length === 0 && (
-          <p className="text-center text-gray-500">
-            No orders found
-          </p>
-        )}
       </div>
 
-      {/* ================= ORDER DETAILS MODAL ================= */}
+      {/* ================= MODAL ================= */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-          <div className="bg-white w-full max-w-xl p-6 rounded-xl shadow relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 px-3">
+          <div className="bg-white w-full max-w-xl p-5 rounded-xl max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setSelectedOrder(null)}
-              className="
-  absolute
-  top-3
-  right-3
-  text-xl
-  text-gray-500
-  hover:text-black
-  transition
-"
-
+              className="float-right text-xl"
             >
               ✕
             </button>
 
-            <h2 className="text-xl font-bold text-[#2F4F3E] mb-4">
-              Order Details
-            </h2>
+            <h2 className="text-xl font-bold mb-3 pb-2">Order Details</h2>
+            {/* CUSTOMER */}
+            <p className="text-sm">
+              <b>Customer :</b> {selectedOrder.user?.name}
+            </p>
+            <p className="text-sm">
+              <b>Email :</b> {selectedOrder.user?.email}
+            </p>
+            <p className="text-sm">
+              <b>Ordered on :</b> {selectedOrder.createdAt?.slice(0, 10)}
+            </p>
+            <p className="text-sm">
+              <b>Order id:</b> {selectedOrder._id}
+            </p>
 
-            <p className="text-sm"><b>Order ID:</b> {selectedOrder._id}</p>
-            <p className="text-sm"><b>Total:</b> ₹{selectedOrder.totalPrice}</p>
-            <p className="text-sm"><b>Payment:</b> {selectedOrder.paymentMethod}</p>
-            <p className="text-sm"><b>Paid:</b> {selectedOrder.isPaid ? "Yes" : "No"}</p>
 
             <hr className="my-3" />
 
-            <h3 className="font-semibold text-[#2F4F3E] mb-1">
-              Shipping Address
-            </h3>
-
-            <p className="text-sm text-gray-700">
+            {/* ADDRESS */}
+            <p className="text-sm font-semibold text-[#16271e] pb-2">
+              Delivery Address
+            </p>
+            <p className="text-sm text-gray-700 ">
               {selectedOrder.shippingAddress.name}<br />
               {selectedOrder.shippingAddress.address}<br />
               {selectedOrder.shippingAddress.city},{" "}
@@ -277,51 +217,94 @@ function AdminOrders() {
 
             <hr className="my-3" />
 
-            <h3 className="font-semibold text-[#2F4F3E] mb-2">
+            {/* PRODUCTS */}
+            <p className="text-sm font-semibold text-[#2F4F3E] mb-1">
               Products
-            </h3>
+            </p>
 
             {selectedOrder.orderItems.map((item) => (
               <div
                 key={item.product}
-                className="flex justify-between text-sm mb-1"
+                className="flex justify-between text-sm border-b py-1"
               >
                 <span>
                   {item.name} × {item.quantity}
                 </span>
-                <span>₹{item.price}</span>
+                <span>₹{item.price * item.quantity}</span>
               </div>
             ))}
 
             <hr className="my-3" />
 
+            {/* PRICE */}
+            <div className="text-sm space-y-1">
+              <div className="flex justify-between">
+                <span>Items</span>
+                <span>₹{selectedOrder.itemsPrice}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span>₹{selectedOrder.shippingPrice}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Tax</span>
+                <span>₹{selectedOrder.taxPrice}</span>
+              </div>
+              <div className="flex justify-between font-bold border-t pt-2">
+                <span className="pb-7">Total</span>
+                <span>₹{selectedOrder.totalPrice}</span>
+              </div>
+            </div>
+            <button
+              onClick={togglePaidStatus}
+              disabled={loading}
+              className={`w-full mb-3 py-2 rounded text-white pb-2 ${selectedOrder.isPaid ? "bg-red-400" : "bg-green-500"
+                }`}
+            >
+              {selectedOrder.isPaid ? "Mark As Unpaid" : "Mark As Paid"}
+            </button>
+
+
+            <hr className="my-4" />
+
+
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value);
+                if (e.target.value === "deliver-today") setEta(today());
+                if (e.target.value === "deliver-tomorrow") setEta(tomorrow());
+              }}
               className="w-full border p-2 rounded mb-2"
             >
               <option value="pending">Pending</option>
               <option value="confirmed">Confirmed</option>
-              <option value="shipped">Shipped</option>
+              <option value="in-transit">In Transit</option>
+              <option value="deliver-today">Deliver Today</option>
+              <option value="deliver-tomorrow">Deliver Tomorrow</option>
               <option value="delivered">Delivered</option>
             </select>
 
-            <label className="text-sm font-medium text-gray-600">
-              Estimated Delivery Date
-            </label>
+            {status === "delivered" ? (
+              <p className="text-green-700 font-semibold">
+                Delivered on{" "}
+                {new Date(selectedOrder.deliveredAt).toLocaleDateString()}
+              </p>
+            ) : (
+              <input
+                type="date"
+                value={eta}
+                onChange={(e) => setEta(e.target.value)}
+                className="w-full border p-2 rounded mb-3"
+              />
+            )}
 
-            <input
-              type="date"
-              value={eta}
-              onChange={(e) => setEta(e.target.value)}
-              className="w-full border p-2 rounded mb-3"
-            />
             <button
-              disabled={loading}
               onClick={updateOrderStatus}
-              className="w-full bg-[#2F4F3E] text-white py-2 rounded-lg"
+              disabled={loading}
+              className="w-full bg-[#2F4F3E] text-white py-2 rounded"
             >
-              {loading ? "Updating..." : "Update Order"}
+              Update Order
             </button>
           </div>
         </div>

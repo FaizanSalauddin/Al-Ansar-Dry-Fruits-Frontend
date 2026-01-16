@@ -115,15 +115,21 @@ function MyOrders() {
                   <p className="text-xs text-gray-500">
                     Ordered on{" "}
                     {new Date(order.createdAt).toLocaleDateString("en-GB", {
-  day: "2-digit",
-  month: "2-digit",
-  year: "2-digit",
-})}
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "2-digit",
+                    })}
 
                   </p>
 
                   {/* 🚚 EXPECTED DELIVERY */}
-                  {order.estimatedDeliveryDate && (
+
+                  {order.orderStatus === "delivered" ? (
+                    <p className="text-green-700 font-semibold">
+                      Delivered on{" "}
+                      {new Date(order.deliveredAt).toLocaleDateString()}
+                    </p>
+                  ) : order.estimatedDeliveryDate && (
                     <p className="mt-1 text-sm font-medium text-[#2F4F3E]">
                       🚚 Expected by{" "}
                       <span className="font-semibold">

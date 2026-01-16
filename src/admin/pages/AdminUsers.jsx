@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import adminApi from "../../api/adminApi";
-
+import { toast } from "react-toastify";
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
 
@@ -8,11 +8,18 @@ const AdminUsers = () => {
     const { data } = await adminApi.get("/users"); // ✅ admin only
     setUsers(data.users);
   };
+const deleteUser = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this user?")) return;
 
-  const deleteUser = async (id) => {
+  try {
     await adminApi.delete(`/users/${id}`);
+    toast.success("User deleted successfully");
     fetchUsers();
-  };
+  } catch (error) {
+    toast.error("Failed to delete user");
+  }
+};
+
 
   useEffect(() => {
     fetchUsers();
