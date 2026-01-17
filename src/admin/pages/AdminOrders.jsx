@@ -246,10 +246,7 @@ function AdminOrders() {
                 <span>Shipping</span>
                 <span>₹{selectedOrder.shippingPrice}</span>
               </div>
-              <div className="flex justify-between">
-                <span>Tax</span>
-                <span>₹{selectedOrder.taxPrice}</span>
-              </div>
+           
               <div className="flex justify-between font-bold border-t pt-2">
                 <span className="pb-7">Total</span>
                 <span>₹{selectedOrder.totalPrice}</span>

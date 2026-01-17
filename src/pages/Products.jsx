@@ -8,22 +8,24 @@ const Products = () => {
   const { setLoading } = useLoader();
   const [products, setProducts] = useState([]);
 
-  // ✅ URL se category read kar rahe hain
   const [searchParams] = useSearchParams();
-  const category = searchParams.get("category"); // almonds, dates, etc
+  const category = searchParams.get("category");
+  const search = searchParams.get("search");
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
 
-        // ✅ category ho to filter, warna all
-        const url = category
+        const url = search
+          ? `/products/search?q=${search}`
+          : category
           ? `/products?category=${category}`
           : "/products";
 
         const { data } = await userApi.get(url);
-        setProducts(data);
+
+        setProducts(data.products || data);
       } catch (error) {
         console.error("Fetch products error:", error.message);
       } finally {
@@ -32,12 +34,16 @@ const Products = () => {
     };
 
     fetchProducts();
-  }, [setLoading, category]);
+  }, [setLoading, category, search]);
 
   return (
     <div className="bg-[#F5EFE6] min-h-screen px-4 py-8">
       <h1 className="text-2xl font-bold text-[#2F4F3E] mb-6 capitalize">
-        {category ? category : "All Products"}
+        {search
+          ? `Search results for "${search}"`
+          : category
+          ? category
+          : "All Products"}
       </h1>
 
       {products.length === 0 ? (

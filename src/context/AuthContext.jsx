@@ -5,7 +5,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
 
-  // 🔄 Sync from localStorage on load
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem("userInfo"));
     if (storedUser?.token) {
@@ -13,17 +12,17 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  // ✅ LOGIN
   const login = (data) => {
     localStorage.setItem("userInfo", JSON.stringify(data));
     setUser(data);
   };
 
-  // ✅ LOGOUT
   const logout = () => {
     localStorage.removeItem("userInfo");
-    localStorage.removeItem("shippingAddress");
     setUser(null);
+
+    // ✅ Redirect to home after logout
+    window.location.href = "/home";
   };
 
   return (

@@ -1,44 +1,113 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import userApi from "../api/userApi";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
 
 function PlaceOrder() {
   const navigate = useNavigate();
-  const { fetchCart } = useCart();
+  const { cart, fetchCart } = useCart();
 
-  const shipping = JSON.parse(localStorage.getItem("shippingAddress"));
+  const shipping = JSON.parse(
+    localStorage.getItem("shippingAddress")
+  );
 
-  const placeOrder = async () => {
-    try {
-      await userApi.post("/orders/from-cart", {
-        shippingAddress: shipping,
-        paymentMethod: "cod",
-      });
-
-      toast.success("Order placed successfully 🎉");
-      fetchCart();
-      navigate("/home");
-    } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Order failed"
-      );
+  // 🔐 SAFETY CHECKS
+  useEffect(() => {
+    if (!cart || cart.items.length === 0) {
+      navigate("/cart");
+      return;
     }
 
-  };
+    if (!shipping) {
+      navigate("/checkout");
+    }
+  }, [cart, shipping, navigate]);
+
+  if (!cart || !shipping) return null;
+
+  // 💰 PRICE CALCULATION (SAME AS BACKEND)
+  const itemsPrice = cart.totalPrice;
+  const shippingPrice = itemsPrice > 1000 ? 0 : 50;
+  const totalPrice = itemsPrice + shippingPrice;
+
+  const placeOrder = async () => {
+  try {
+    const payload = {
+      name: shipping.name,
+      address: shipping.addressLine, // 🔥 FIX HERE
+      city: shipping.city,
+      state: shipping.state,
+      pincode: shipping.pincode,
+      phone: shipping.phone,
+    };
+
+    await userApi.post("/orders/from-cart", {
+      shippingAddress: payload,
+      paymentMethod: "cod",
+    });
+
+    toast.success("Order placed successfully 🎉");
+    localStorage.removeItem("shippingAddress");
+    fetchCart();
+    navigate("/home");
+  } catch (err) {
+    toast.error(
+      err.response?.data?.message || "Order failed"
+    );
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-[#F5EFE6] flex items-center justify-center px-4">
-      <div className="bg-white p-6 rounded-xl shadow w-full max-w-md text-center">
-        <h2 className="text-2xl font-bold mb-4 text-[#2F4F3E]">
-          Ready to Place Order?
+      <div className="bg-white p-6 rounded-xl shadow w-full max-w-md">
+
+        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-4 text-center">
+          Confirm Your Order
         </h2>
 
+        {/* 📦 SHIPPING */}
+        <div className="text-sm text-gray-700 mb-4 border rounded-lg p-3">
+          <p className="font-semibold mb-1">Delivery Address</p>
+          <p>
+            {shipping.name}, {shipping.addressLine}, {shipping.city},{" "}
+            {shipping.state} - {shipping.pincode}
+          </p>
+          <p className="mt-1">📞 {shipping.phone}</p>
+        </div>
+
+        {/* 💰 PRICE SUMMARY */}
+        <div className="border rounded-lg p-3 mb-4 text-sm space-y-2">
+          <div className="flex justify-between">
+            <span>Items Price</span>
+            <span>₹{itemsPrice}</span>
+          </div>
+
+          <div className="flex justify-between">
+            <span>Delivery</span>
+            <span>{shippingPrice === 0 ? "FREE" : "₹50"}</span>
+          </div>
+
+          <div className="flex justify-between font-bold text-base border-t pt-2">
+            <span>Total</span>
+            <span>₹{totalPrice}</span>
+          </div>
+        </div>
+
+        {/* ACTIONS */}
         <button
           onClick={placeOrder}
-          className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg"
+          className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#244235]"
         >
-          Place Order (COD)
+          Place Order (Cash on Delivery)
+        </button>
+
+        <button
+          onClick={() => navigate(-1)}
+          className="w-full mt-3 border py-2 rounded-lg text-sm hover:bg-gray-100"
+        >
+          ← Back
         </button>
       </div>
     </div>

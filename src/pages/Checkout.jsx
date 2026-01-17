@@ -1,59 +1,83 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import userApi from "../api/userApi";
 import { toast } from "react-toastify";
 
 const INDIAN_STATES = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Odisha",
-  "Punjab", "Rajasthan", "Tamil Nadu", "Telangana",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal",
+  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+  "Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
+  "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Odisha",
+  "Punjab","Rajasthan","Tamil Nadu","Telangana",
+  "Uttar Pradesh","Uttarakhand","West Bengal",
 ];
 
 function Checkout() {
   const navigate = useNavigate();
   const { cart } = useCart();
 
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [showForm, setShowForm] = useState(false);
   const [showStates, setShowStates] = useState(false);
 
-  const savedShipping = JSON.parse(
-    localStorage.getItem("shippingAddress")
-  );
+  const [formData, setFormData] = useState({
+    label: "Home",
+    name: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    pincode: "",
+    phone: "",
+  });
 
-  const [shipping, setShipping] = useState(
-    savedShipping || {
-      name: "",
-      address: "",
-      city: "",
-      state: "",
-      pincode: "",
-      phone: "",
+  useEffect(() => {
+    fetchAddresses();
+  }, []);
+
+  const fetchAddresses = async () => {
+    try {
+      const { data } = await userApi.get("/users/addresses");
+      setAddresses(data);
+
+      // ✅ SINGLE ADDRESS → AUTO CONTINUE
+      if (data.length === 1) {
+        localStorage.setItem(
+          "shippingAddress",
+          JSON.stringify(data[0])
+        );
+        navigate("/order-summary");
+      }
+    } catch (err) {
+      console.error(err);
     }
-  );
+  };
 
-  const submitHandler = (e) => {
+  // ---------- ADD ADDRESS ----------
+  const submitHandler = async (e) => {
     e.preventDefault();
-    if (!/^[6-9]\d{9}$/.test(shipping.phone)) {
+
+    if (!/^[6-9]\d{9}$/.test(formData.phone)) {
       toast.error("Enter valid 10-digit Indian phone number");
       return;
     }
 
-    // ✅ Save address
-    localStorage.setItem(
-      "shippingAddress",
-      JSON.stringify(shipping)
-    );
+    try {
+      const { data } = await userApi.post("/users/addresses", formData);
+      toast.success("Address added ✅");
 
-    toast.success("Address saved ✅");
-
-    // ✅ Go to Order Summary (NOT placing order here)
-    navigate("/order-summary");
+      // ✅ SAVE & CONTINUE
+      localStorage.setItem(
+        "shippingAddress",
+        JSON.stringify(data)
+      );
+      navigate("/order-summary");
+    } catch (err) {
+      toast.error("Failed to add address");
+    }
   };
 
-  if (!cart || cart.items.length === 0) {
-    return null;
-  }
+  if (!cart || cart.items.length === 0) return null;
 
   return (
     <div className="min-h-screen bg-[#F5EFE6] px-4 py-6">
@@ -62,101 +86,160 @@ function Checkout() {
           Checkout
         </h2>
 
-        <form onSubmit={submitHandler} className="space-y-3">
+        {/* ========== ADDRESS SELECTION (2+ ADDRESSES) ========== */}
+        {addresses.length > 1 && !showForm && (
+          <>
+            <h3 className="font-semibold mb-3">
+              Select Delivery Address
+            </h3>
 
-          <input
-            required
-            placeholder="NAME"
-            value={shipping.name}
-            onChange={(e) =>
-              setShipping({ ...shipping, name: e.target.value })
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
+            <div className="space-y-3">
+              {addresses.map(addr => (
+                <label
+                  key={addr._id}
+                  className={`border rounded-lg p-3 flex gap-3 cursor-pointer ${
+                    selectedAddress?._id === addr._id
+                      ? "border-[#2F4F3E] bg-[#F5EFE6]"
+                      : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    checked={selectedAddress?._id === addr._id}
+                    onChange={() => setSelectedAddress(addr)}
+                  />
+                  <div>
+                    <p className="font-medium">{addr.label}</p>
+                    <p className="text-sm text-gray-600">
+                      {addr.addressLine}, {addr.city}, {addr.state} - {addr.pincode}
+                    </p>
+                    <p className="text-sm">📞 {addr.phone}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
 
-          <input
-            required
-            placeholder="ADDRESS"
-            value={shipping.address}
-            onChange={(e) =>
-              setShipping({ ...shipping, address: e.target.value })
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setShowForm(true)}
+                className="border px-4 py-2 rounded-lg"
+              >
+                + Add New
+              </button>
 
-          <input
-            required
-            placeholder="CITY"
-            value={shipping.city}
-            onChange={(e) =>
-              setShipping({ ...shipping, city: e.target.value })
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
+              <button
+                disabled={!selectedAddress}
+                onClick={() => {
+                  localStorage.setItem(
+                    "shippingAddress",
+                    JSON.stringify(selectedAddress)
+                  );
+                  navigate("/order-summary");
+                }}
+                className="bg-[#2F4F3E] text-white px-4 py-2 rounded-lg disabled:opacity-50"
+              >
+                Continue →
+              </button>
+            </div>
+          </>
+        )}
 
-          {/* STATE */}
-          <div className="relative">
+        {/* ========== ADDRESS FORM (0 ADDRESS OR ADD NEW) ========== */}
+        {(addresses.length === 0 || showForm) && (
+          <form onSubmit={submitHandler} className="space-y-3 mt-4">
+
             <input
               required
-              placeholder="STATE"
-              value={shipping.state}
-              onChange={(e) => {
-                setShipping({ ...shipping, state: e.target.value });
-                setShowStates(true);
-              }}
-              onFocus={() => setShowStates(true)}
+              placeholder="NAME"
+              value={formData.name}
+              onChange={e =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className="w-full border px-3 py-2 rounded"
             />
 
-            {showStates && (
-              <div className="absolute z-20 bg-white border rounded w-full max-h-40 overflow-y-auto shadow">
-                {INDIAN_STATES.filter((state) =>
-                  state.toLowerCase().includes(
-                    shipping.state.toLowerCase()
-                  )
-                ).map((state) => (
-                  <div
-                    key={state}
-                    onClick={() => {
-                      setShipping({ ...shipping, state });
-                      setShowStates(false);
-                    }}
-                    className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  >
-                    {state}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+            <input
+              required
+              placeholder="ADDRESS"
+              value={formData.addressLine}
+              onChange={e =>
+                setFormData({ ...formData, addressLine: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
 
-          <input
-            required
-            placeholder="PINCODE"
-            value={shipping.pincode}
-            onChange={(e) =>
-              setShipping({ ...shipping, pincode: e.target.value })
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
+            <input
+              required
+              placeholder="CITY"
+              value={formData.city}
+              onChange={e =>
+                setFormData({ ...formData, city: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
 
-          <input
-            required
-            placeholder="PHONE"
-            value={shipping.phone}
-            onChange={(e) =>
-              setShipping({ ...shipping, phone: e.target.value })
-            }
-            className="w-full border px-3 py-2 rounded"
-          />
+            {/* STATE */}
+            <div className="relative">
+              <input
+                required
+                placeholder="STATE"
+                value={formData.state}
+                onChange={e => {
+                  setFormData({ ...formData, state: e.target.value });
+                  setShowStates(true);
+                }}
+                onFocus={() => setShowStates(true)}
+                className="w-full border px-3 py-2 rounded"
+              />
 
-          <button
-            type="submit"
-            className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg mt-4"
-          >
-            Continue to Order Summary →
-          </button>
-        </form>
+              {showStates && (
+                <div className="absolute z-20 bg-white border w-full max-h-40 overflow-y-auto shadow">
+                  {INDIAN_STATES.filter(s =>
+                    s.toLowerCase().includes(formData.state.toLowerCase())
+                  ).map(s => (
+                    <div
+                      key={s}
+                      onClick={() => {
+                        setFormData({ ...formData, state: s });
+                        setShowStates(false);
+                      }}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                    >
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <input
+              required
+              placeholder="PINCODE"
+              value={formData.pincode}
+              onChange={e =>
+                setFormData({ ...formData, pincode: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
+
+            <input
+              required
+              placeholder="PHONE"
+              value={formData.phone}
+              onChange={e =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
+
+            <button
+              type="submit"
+              className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg"
+            >
+              Save & Continue →
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );

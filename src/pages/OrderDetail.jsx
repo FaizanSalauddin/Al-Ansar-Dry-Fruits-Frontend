@@ -137,11 +137,6 @@ function OrderDetail() {
               <span>₹{order.shippingPrice}</span>
             </div>
 
-            <div className="flex justify-between">
-              <span>Tax</span>
-              <span>₹{order.taxPrice}</span>
-            </div>
-
             <div className="flex justify-between font-bold text-lg border-t pt-2">
               <span>Total</span>
               <span>₹{order.totalPrice}</span>
