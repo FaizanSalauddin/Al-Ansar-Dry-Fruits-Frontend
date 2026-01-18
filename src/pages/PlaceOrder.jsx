@@ -28,7 +28,7 @@ function PlaceOrder() {
 
   // 💰 PRICE CALCULATION (SAME AS BACKEND)
   const itemsPrice = cart.totalPrice;
-  const shippingPrice = itemsPrice > 1000 ? 0 : 50;
+  const shippingPrice = itemsPrice >= 1000 ? 0 : 50;
   const totalPrice = itemsPrice + shippingPrice;
 
   const placeOrder = async () => {

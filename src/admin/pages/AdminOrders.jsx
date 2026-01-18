@@ -8,20 +8,27 @@ function AdminOrders() {
   const [status, setStatus] = useState("");
   const [eta, setEta] = useState("");
   const [loading, setLoading] = useState(false);
+  const [filter, setFilter] = useState("all");
 
   /* ================= FETCH ================= */
-  const fetchOrders = async () => {
+  const fetchOrders = async (activeFilter = filter) => {
     try {
-      const { data } = await adminApi.get("/orders");
+      let url = "/orders";
+
+      if (activeFilter === "today") url += "?date=today";
+      if (activeFilter === "pending") url += "?status=pending";
+      if (activeFilter === "delivered") url += "?status=delivered";
+      if (activeFilter === "cancelled") url += "?status=cancelled";
+      if (activeFilter === "paid") url += "?payment=paid";
+      if (activeFilter === "unpaid") url += "?payment=unpaid";
+
+      const { data } = await adminApi.get(url);
       setOrders(data.orders || []);
     } catch {
       toast.error("Failed to fetch orders");
     }
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
 
   /* ================= DATE HELPERS ================= */
   const today = () => new Date().toISOString().slice(0, 10);
@@ -93,11 +100,53 @@ function AdminOrders() {
     return map[s] || "bg-gray-100 text-gray-600";
   };
 
+  useEffect(() => {
+    setFilter("all");
+    fetchOrders("all");
+  }, []);
+
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-[#2F4F3E]">
         Orders Management
       </h1>
+
+      <div className="flex flex-wrap gap-2 mb-6">
+        {[
+          ["all", "All"],
+          ["today", "Today"],
+          ["pending", "Pending"],
+          ["delivered", "Delivered"],
+          ["cancelled", "Cancelled"],
+          ["paid", "Paid"],
+          ["unpaid", "Unpaid"],
+        ].map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => {
+              setFilter(key);
+              fetchOrders(key);
+            }}
+            className={`px-4 py-2 rounded-full text-sm border transition
+        ${filter === key
+                ? "bg-[#2F4F3E] text-white"
+                : "bg-white text-gray-700 hover:bg-gray-100"
+              }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {orders.length === 0 && (
+        <div className="bg-white rounded-xl shadow p-6 text-center text-gray-600">
+          <p className="text-lg font-semibold">No orders yet</p>
+          <p className="text-sm mt-1">
+            There are no orders in this category.
+          </p>
+        </div>
+      )}
 
       {/* ================= DESKTOP ================= */}
       <div className="hidden md:block bg-white rounded-xl shadow">
@@ -246,7 +295,7 @@ function AdminOrders() {
                 <span>Shipping</span>
                 <span>₹{selectedOrder.shippingPrice}</span>
               </div>
-           
+
               <div className="flex justify-between font-bold border-t pt-2">
                 <span className="pb-7">Total</span>
                 <span>₹{selectedOrder.totalPrice}</span>
