@@ -1,3 +1,115 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+/* ===== ARROWS ===== */
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 22px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.arrow.left {
+  left: 10px;
+}
+
+.arrow.right {
+  right: 10px;
+}
+
+/* ===== CAROUSEL ===== */
+.carousel {
+  width: 140px;
+  transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Apple spring */
+}
+
+/* SIDE CARDS */
+.carousel.side {
+  transform: translateY(12px) scale(0.92);
+  opacity: 0.55;
+  filter: blur(2px);
+  z-index: 1;
+}
+
+/* ACTIVE CARD */
+.carousel.active {
+  transform: translateY(-14px) scale(1.08);
+  z-index: 10;
+  box-shadow:
+    0 25px 40px rgba(0, 0, 0, 0.15),
+    0 0 25px rgba(47, 79, 62, 0.35);
+  /* glow */
+}
+
+/* GLASS EFFECT */
+.carousel.active::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(to bottom,
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.05));
+  z-index: -1;
+}
+
+/* DESKTOP RESET */
+@media (min-width: 768px) {
+  .carousel {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+  }
+}
+
+/* ================= DESKTOP RESET (NO GLASS / NO BLUR) ================= */
+@media (min-width: 768px) {
+
+  .carousel {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+  }
+
+  .carousel.side {
+    transform: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+  }
+
+  .carousel.active {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* ❌ REMOVE GLASS EFFECT */
+  .carousel.active::before {
+    display: none !important;
+  }
+}
+
+/* hide scrollbar everywhere */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  /* IE */
+  scrollbar-width: none;
+  /* Firefox */
+}

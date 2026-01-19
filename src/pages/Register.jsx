@@ -1,12 +1,18 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import userApi from "../api/userApi";
+import { useAuth } from "../context/AuthContext";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ IMPORTANT
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -16,13 +22,16 @@ function Register() {
 
     try {
       setLoading(true);
+
       const { data } = await userApi.post("/auth/register", {
         name,
         email,
         password,
       });
 
-      localStorage.setItem("userInfo", JSON.stringify(data));
+      // ✅ AUTO LOGIN AFTER REGISTER
+      login(data);
+
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
@@ -61,14 +70,29 @@ function Register() {
             className="w-full border px-4 py-2 rounded-lg"
           />
 
-          <input
-            type="password"
-            placeholder="Password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full border px-4 py-2 rounded-lg"
-          />
+          {/* 🔐 PASSWORD WITH EYE */}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border px-4 py-2 rounded-lg pr-10"
+            />
+
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="w-5 h-5" />
+              ) : (
+                <EyeIcon className="w-5 h-5" />
+              )}
+            </button>
+          </div>
 
           <button
             disabled={loading}

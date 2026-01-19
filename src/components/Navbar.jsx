@@ -94,7 +94,10 @@ function Navbar() {
       navigate(`/products?search=${searchValue.trim()}`);
     }
   };
-
+  const clearSearch = () => {
+    setSearchValue("");
+    navigate("/home");
+  };
   const animatedPlaceholder = useAnimatedPlaceholder(
     "Search For ",
     ["Dry Fruits...", "Dates... ", "Raisins... ", "Ajwa Dates... ", "Almonds... ", "Pistachios... ", "Cashews... ", "Walnuts... "]
@@ -117,19 +120,34 @@ function Navbar() {
           </Link>
 
           {/* SEARCH (CENTER) */}
-          {!shouldHideSearch && (<form
-            onSubmit={handleSearchSubmit}
-            className="flex items-center bg-white border border-[#e4dccf] rounded-full px-4 py-2 shadow-sm w-full max-w-lg"
-          >
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-2" />
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder={searchValue ? "Search For" : animatedPlaceholder}
-              className="w-full outline-none text-sm bg-transparent"
-            />
-          </form>)}
+          {!shouldHideSearch && (
+            <form
+              onSubmit={handleSearchSubmit}
+              className="relative flex items-center bg-white border border-[#e4dccf] rounded-full px-4 py-2 shadow-sm w-full max-w-lg"
+            >
+              <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-2" />
+
+              <input
+                type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder={searchValue ? "Search For" : animatedPlaceholder}
+                className="w-full outline-none text-sm bg-transparent pr-8"
+              />
+
+              {/* ❌ CLEAR BUTTON */}
+              {searchValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-4 text-gray-400 hover:text-gray-700 text-lg"
+                >
+                  ×
+                </button>
+              )}
+            </form>
+          )}
+
 
           {/* ICONS */}
           <div className="flex items-center gap-8">
@@ -219,19 +237,34 @@ function Navbar() {
           </div>
 
           {/* SEARCH BELOW */}
-          {!shouldHideSearch && (<form
-            onSubmit={handleSearchSubmit}
-            className="mt-3 flex items-center bg-white border border-[#e4dccf] rounded-full px-4 py-2 shadow-sm"
-          >
-            <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-2" />
-            <input
-              type="text"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              placeholder={searchValue ? "Search For" : animatedPlaceholder}
-              className="w-full outline-none text-sm bg-transparent"
-            />
-          </form>)}
+          {!shouldHideSearch && (
+            <form
+              onSubmit={handleSearchSubmit}
+              className="relative mt-3 flex items-center bg-white border border-[#e4dccf] rounded-full px-4 py-2 shadow-sm"
+            >
+              <MagnifyingGlassIcon className="w-5 h-5 text-gray-400 mr-2" />
+
+              <input
+                type="text"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+                placeholder={searchValue ? "Search For" : animatedPlaceholder}
+                className="w-full outline-none text-sm bg-transparent pr-8"
+              />
+
+              {/* ❌ CLEAR BUTTON */}
+              {searchValue && (
+                <button
+                  type="button"
+                  onClick={clearSearch}
+                  className="absolute right-4 text-gray-400 hover:text-gray-700 text-lg"
+                >
+                  ×
+                </button>
+              )}
+            </form>
+          )}
+
         </div>
 
       </nav>

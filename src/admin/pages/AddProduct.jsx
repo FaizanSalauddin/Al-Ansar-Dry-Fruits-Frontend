@@ -1,23 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import adminApi from "../../api/adminApi";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-
-const CATEGORIES = [
-  "almonds",
-  "cashews",
-  "pistachios",
-  "walnuts",
-  "raisins",
-  "dates",
-  "other",
-];
 
 function AddProduct() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
+
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   const [product, setProduct] = useState({
     name: "",
@@ -27,6 +20,23 @@ function AddProduct() {
     stockQuantity: "",
     description: "",
   });
+
+  /* ================= FETCH CATEGORIES ================= */
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const { data } = await adminApi.get("/products/categories");
+        setCategories(data.categories || []);
+      } catch (err) {
+        toast.error("Failed to load categories");
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   /* ================= IMAGE HANDLER ================= */
   const imageHandler = (e) => {
@@ -92,6 +102,7 @@ function AddProduct() {
       </h1>
 
       <form onSubmit={submitHandler} className="space-y-4">
+
         <input
           required
           placeholder="Product Name"
@@ -102,7 +113,7 @@ function AddProduct() {
           className="w-full border px-4 py-2 rounded"
         />
 
-        {/* CATEGORY */}
+        {/* CATEGORY (DYNAMIC) */}
         <select
           required
           value={product.category}
@@ -111,10 +122,13 @@ function AddProduct() {
           }
           className="w-full border px-4 py-2 rounded"
         >
-          <option value="">Select Category</option>
-          {CATEGORIES.map((cat) => (
+          <option value="">
+            {loadingCategories ? "Loading categories..." : "Select Category"}
+          </option>
+
+          {categories.map((cat) => (
             <option key={cat} value={cat}>
-              {cat}
+              {cat.replace("-", " ").toUpperCase()}
             </option>
           ))}
         </select>

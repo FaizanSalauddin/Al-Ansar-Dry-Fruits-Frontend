@@ -5,11 +5,11 @@ import userApi from "../api/userApi";
 import { toast } from "react-toastify";
 
 const INDIAN_STATES = [
-  "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
-  "Delhi","Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
-  "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Odisha",
-  "Punjab","Rajasthan","Tamil Nadu","Telangana",
-  "Uttar Pradesh","Uttarakhand","West Bengal",
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Odisha",
+  "Punjab", "Rajasthan", "Tamil Nadu", "Telangana",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal",
 ];
 
 function Checkout() {
@@ -44,9 +44,18 @@ function Checkout() {
       if (data.length === 1) {
         localStorage.setItem(
           "shippingAddress",
-          JSON.stringify(data[0])
+          JSON.stringify({
+            name: data.name,
+            addressLine: data.addressLine,
+            city: data.city,
+            state: data.state,
+            pincode: data.pincode,
+            phone: data.phone,
+          })
         );
+
         navigate("/order-summary");
+
       }
     } catch (err) {
       console.error(err);
@@ -97,11 +106,10 @@ function Checkout() {
               {addresses.map(addr => (
                 <label
                   key={addr._id}
-                  className={`border rounded-lg p-3 flex gap-3 cursor-pointer ${
-                    selectedAddress?._id === addr._id
+                  className={`border rounded-lg p-3 flex gap-3 cursor-pointer ${selectedAddress?._id === addr._id
                       ? "border-[#2F4F3E] bg-[#F5EFE6]"
                       : ""
-                  }`}
+                    }`}
                 >
                   <input
                     type="radio"

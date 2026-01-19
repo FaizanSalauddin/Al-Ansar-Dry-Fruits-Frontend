@@ -16,6 +16,38 @@ function Profile() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
+  // --- HOOKS MOVED TO THE TOP ---
+  const [addresses, setAddresses] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [showStates, setShowStates] = useState(false);
+
+  const [formData, setFormData] = useState({
+    label: "",
+    name: "",
+    addressLine: "",
+    city: "",
+    state: "",
+    pincode: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      fetchAddresses();
+    }
+  }, [user]);
+
+  const fetchAddresses = async () => {
+    try {
+      const { data } = await userApi.get("/users/addresses");
+      setAddresses(data);
+    } catch (error) {
+      console.error("Error fetching addresses", error);
+    }
+  };
+
+  // --- CONDITIONAL RETURN AFTER HOOKS ---
   if (!user) {
     return (
       <div className="min-h-screen bg-[#F5EFE6] flex items-center justify-center px-4">
@@ -36,30 +68,6 @@ function Profile() {
       </div>
     );
   }
-
-  const [addresses, setAddresses] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [editingId, setEditingId] = useState(null);
-  const [showStates, setShowStates] = useState(false);
-
-  const [formData, setFormData] = useState({
-    label: "",
-    name: "",
-    addressLine: "",
-    city: "",
-    state: "",
-    pincode: "",
-    phone: "",
-  });
-
-  useEffect(() => {
-    fetchAddresses();
-  }, []);
-
-  const fetchAddresses = async () => {
-    const { data } = await userApi.get("/users/addresses");
-    setAddresses(data);
-  };
 
   // ---------- LABEL OPTIONS (Smart) ----------
   const usedLabels = addresses.map(a => a.label);
@@ -125,33 +133,53 @@ function Profile() {
       <div className="max-w-4xl mx-auto space-y-6">
 
         {/* ================= HEADER ================= */}
-        <div className="bg-white rounded-2xl shadow p-6 flex justify-between">
+        <div className="bg-white rounded-2xl shadow p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* USER INFO */}
           <div>
-            <h2 className="text-2xl font-bold text-[#2F4F3E]">{user?.name}</h2>
-            <p className="text-gray-600">{user?.email}</p>
+            <h2 className="text-2xl font-bold text-[#2F4F3E]">
+              {user?.name}
+            </h2>
+            <p className="text-gray-600 text-sm break-all pt-1.5">
+              {user?.email}
+            </p>
           </div>
 
+          {/* MY ORDERS BUTTON */}
           <button
             onClick={() => navigate("/my-orders")}
-            className="bg-[#2F4F3E] text-white px-5 py-2 rounded-lg hover:bg-[#13271c]"
+            className="
+      bg-[#2F4F3E] text-white
+      px-5 py-2 rounded-lg
+      hover:bg-[#13271c]
+      w-full md:w-auto
+      self-start md:self-auto 
+    "
           >
             My Orders
           </button>
         </div>
 
+
         {/* ================= ADDRESSES ================= */}
         <div className="bg-white rounded-2xl shadow p-6">
-          <div className="flex justify-between mb-4">
-            <h3 className="text-lg font-semibold text-[#2F4F3E]">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h3 className="text-lg font-semibold text-[#2F4F3E] pb-2">
               Saved Addresses
             </h3>
+
             <button
               onClick={openAddForm}
-              className="bg-[#2F4F3E] text-white px-4 py-2 rounded-lg  hover:bg-[#13271c]"
+              className="
+        bg-[#2F4F3E] text-white
+        px-4 py-2 rounded-lg
+        hover:bg-[#13271c]
+        w-full sm:w-auto
+      "
             >
               Add Address
             </button>
           </div>
+
 
           {addresses.length === 0 ? (
             <p className="text-gray-500">No addresses added yet.</p>
@@ -161,7 +189,7 @@ function Profile() {
               {addresses.map((addr) => (
                 <div
                   key={addr._id}
-                  className="border rounded-xl p-4 flex justify-between"
+                  className="border rounded-xl p-4 flex flex-col sm:flex-row sm:justify-between gap-4"
                 >
                   {/* LEFT INFO */}
                   <div>
