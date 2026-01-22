@@ -15,8 +15,6 @@ const INDIAN_STATES = [
 function Profile() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-
-  // --- HOOKS MOVED TO THE TOP ---
   const [addresses, setAddresses] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
