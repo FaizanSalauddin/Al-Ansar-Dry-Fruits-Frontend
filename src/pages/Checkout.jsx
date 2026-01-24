@@ -44,19 +44,11 @@ function Checkout() {
       if (data.length === 1) {
         localStorage.setItem(
           "shippingAddress",
-          JSON.stringify({
-            name: data.name,
-            addressLine: data.addressLine,
-            city: data.city,
-            state: data.state,
-            pincode: data.pincode,
-            phone: data.phone,
-          })
+          JSON.stringify(data[0])
         );
-
         navigate("/order-summary");
-
       }
+
     } catch (err) {
       console.error(err);
     }
@@ -107,8 +99,8 @@ function Checkout() {
                 <label
                   key={addr._id}
                   className={`border rounded-lg p-3 flex gap-3 cursor-pointer ${selectedAddress?._id === addr._id
-                      ? "border-[#2F4F3E] bg-[#F5EFE6]"
-                      : ""
+                    ? "border-[#2F4F3E] bg-[#F5EFE6]"
+                    : ""
                     }`}
                 >
                   <input

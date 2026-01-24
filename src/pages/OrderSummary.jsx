@@ -72,7 +72,7 @@ function OrderSummary() {
             {shipping.name}, {shipping.addressLine}, {shipping.city},{" "}
             {shipping.state} - {shipping.pincode}
             <br />
-            Phone: {shipping.phone}
+            <p className="text-sm mt-1">📞 {shipping.phone}</p>
           </p>
         </div>
 
