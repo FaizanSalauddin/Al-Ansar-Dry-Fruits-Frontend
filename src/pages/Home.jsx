@@ -16,6 +16,11 @@ function Home() {
   const desktopScrollRef = useRef(null);
   const desktopIntervalRef = useRef(null);
 
+  /* ================= BEST SELLER SLIDER ================= */
+  const bestSellerRef = useRef(null);
+  const bestSellerInterval = useRef(null);
+
+
   const filteredCategories = categories.filter(
     (c) => c !== "other"
   );
@@ -83,14 +88,23 @@ function Home() {
     filteredCategories.length
     ];
 
-  /* ================= DATA ================= */
-  useEffect(() => {
-    if (filteredCategories.length > 5) {
-      startDesktopScroll();
-    }
-    return stopDesktopScroll;
-  }, [filteredCategories.length]);
+  const startBestSellerScroll = () => {
+    stopBestSellerScroll();
+    bestSellerInterval.current = setInterval(() => {
+      if (!bestSellerRef.current) return;
+      const el = bestSellerRef.current;
+      el.scrollLeft += 1;
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
+        el.scrollLeft = 0;
+      }
+    }, 20);
+  };
 
+  const stopBestSellerScroll = () => {
+    if (bestSellerInterval.current)
+      clearInterval(bestSellerInterval.current);
+  };
+  /* ================= DATA ================= */
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -113,6 +127,19 @@ function Home() {
     if (filteredCategories.length > 1) startAutoSlide();
     return stopAutoSlide;
   }, [filteredCategories.length]);
+
+  useEffect(() => {
+    if (filteredCategories.length > 5) startDesktopScroll();
+    return stopDesktopScroll;
+  }, [filteredCategories.length]);
+
+  useEffect(() => {
+    if (products.length > 4) startBestSellerScroll();
+    return stopBestSellerScroll;
+  }, [products.length]);
+
+  const bestSellers = products.slice(0, 8); // 👈 top items
+  const allProducts = products;
 
   return (
     <div className="bg-[#F5EFE6] min-h-screen">
@@ -186,14 +213,34 @@ function Home() {
 
       </section>
 
-      {/* ================= PRODUCTS ================= */}
+      {/* ================= BEST SELLERS SLIDER ================= */}
       <section className="px-4 pb-12">
         <h2 className="text-2xl font-bold text-[#2F4F3E] mb-6">
           Best Sellers
         </h2>
 
+        <div
+          ref={bestSellerRef}
+          onMouseEnter={stopBestSellerScroll}
+          onMouseLeave={startBestSellerScroll}
+          className="flex gap-6 overflow-x-scroll no-scrollbar pb-4"
+        >
+          {[...bestSellers, ...bestSellers].map((p, i) => (
+            <div key={p._id + i} className="min-w-[260px]">
+              <ProductCard product={p} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ================= ALL PRODUCTS GRID ================= */}
+      <section className="px-4 pb-16">
+        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-6">
+          All Products
+        </h2>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {products.map((p) => (
+          {allProducts.map((p) => (
             <ProductCard key={p._id} product={p} />
           ))}
         </div>
