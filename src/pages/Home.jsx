@@ -139,15 +139,14 @@ function Home() {
   }, [products.length]);
 
   const bestSellers = products.slice(0, 8); // 👈 top items
-  const allProducts = products;
 
   return (
     <div className="bg-[#F5EFE6] min-h-screen">
 
       {/* ================= CATEGORIES ================= */}
       <section className="px-4 pb-12">
-        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-6">
-          Shop by Category
+        <h2 className="text-3xl font-bold text-[#2F4F3E] mb-6 pt-3">
+          Shop By Category
         </h2>
 
         {/* ================= MOBILE CAROUSEL ================= */}
@@ -215,7 +214,7 @@ function Home() {
 
       {/* ================= BEST SELLERS SLIDER ================= */}
       <section className="px-4 pb-12">
-        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-6">
+        <h2 className="text-3xl font-bold text-[#2F4F3E] mb-6">
           Best Sellers
         </h2>
 
@@ -226,7 +225,7 @@ function Home() {
           className="flex gap-6 overflow-x-scroll no-scrollbar pb-4"
         >
           {[...bestSellers, ...bestSellers].map((p, i) => (
-            <div key={p._id + i} className="min-w-[260px]">
+            <div key={p._id + i} className="min-w-[225px]">
               <ProductCard product={p} />
             </div>
           ))}
@@ -235,15 +234,23 @@ function Home() {
 
       {/* ================= ALL PRODUCTS GRID ================= */}
       <section className="px-4 pb-16">
-        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-6">
-          All Products
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {allProducts.map((p) => (
-            <ProductCard key={p._id} product={p} />
-          ))}
-        </div>
+          {products.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
+            <div className="w-20 h-20 mx-auto mb-4 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <p className="text-lg text-gray-600 mb-2">No products found</p>
+            <p className="text-gray-500">Try different search terms or browse categories</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+            {products.map((product) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
