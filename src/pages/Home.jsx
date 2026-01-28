@@ -33,7 +33,7 @@ function Home() {
 
       const el = desktopScrollRef.current;
 
-      el.scrollLeft += 1; // 👉 speed (1 = smooth)
+      el.scrollLeft += 1; 
 
       // Infinite loop
       if (
@@ -222,10 +222,10 @@ function Home() {
           ref={bestSellerRef}
           onMouseEnter={stopBestSellerScroll}
           onMouseLeave={startBestSellerScroll}
-          className="flex gap-6 overflow-x-scroll no-scrollbar pb-4"
+          className="flex gap-4 overflow-x-scroll no-scrollbar pb-5"
         >
           {[...bestSellers, ...bestSellers].map((p, i) => (
-            <div key={p._id + i} className="min-w-[225px]">
+            <div key={p._id + i} className="min-w-[220px]">
               <ProductCard product={p} />
             </div>
           ))}

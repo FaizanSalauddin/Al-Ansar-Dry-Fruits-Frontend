@@ -43,13 +43,19 @@ function AdminOrders() {
     try {
       setLoading(true);
 
+      // 1️⃣ Status update
       await adminApi.put(`/orders/${selectedOrder._id}/status`, { status });
 
-      if (status !== "delivered" && eta) {
+      // 2️⃣ Date update ONLY if admin manually changed it
+      if (
+        eta &&
+        eta !== selectedOrder.estimatedDeliveryDate?.slice(0, 10)
+      ) {
         await adminApi.put(`/orders/${selectedOrder._id}/estimated-date`, {
           estimatedDeliveryDate: eta,
         });
       }
+
 
       toast.success("Order updated");
       setSelectedOrder(null);
