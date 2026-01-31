@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import userApi from "../api/userApi";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
+import CheckoutSteps from "../components/CheckoutSteps";
 
 function PlaceOrder() {
   const navigate = useNavigate();
@@ -32,43 +33,45 @@ function PlaceOrder() {
   const totalPrice = itemsPrice + shippingPrice;
 
   const placeOrder = async () => {
-  try {
-    const payload = {
-      name: shipping.name,
-      address: shipping.addressLine, // 🔥 FIX HERE
-      city: shipping.city,
-      state: shipping.state,
-      pincode: shipping.pincode,
-      phone: shipping.phone,
-    };
+    try {
+      const payload = {
+        name: shipping.name,
+        address: shipping.addressLine, // 🔥 FIX HERE
+        city: shipping.city,
+        state: shipping.state,
+        pincode: shipping.pincode,
+        phone: shipping.phone,
+      };
 
-    await userApi.post("/orders/from-cart", {
-      shippingAddress: payload,
-      paymentMethod: "cod",
-    });
+      await userApi.post("/orders/from-cart", {
+        shippingAddress: payload,
+        paymentMethod: "cod",
+      });
 
-    toast.success("Order placed successfully 🎉");
-    localStorage.removeItem("shippingAddress");
-    fetchCart();
-    navigate("/home");
-  } catch (err) {
-    toast.error(
-      err.response?.data?.message || "Order failed"
-    );
-  }
-};
+      toast.success("Order placed successfully 🎉");
+      localStorage.removeItem("shippingAddress");
+      fetchCart();
+      navigate("/home");
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message || "Order failed"
+      );
+    }
+  };
+
 
 
   return (
     <div className="min-h-screen bg-[#F5EFE6] flex items-center justify-center px-4">
       <div className="bg-white p-6 rounded-xl shadow w-full max-w-md">
 
-        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-4 text-center">
-          Confirm Your Order
+        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-10 text-center">
+          Payment
         </h2>
+        <CheckoutSteps currentStep="payment" />
 
         {/* 📦 SHIPPING */}
-        <div className="text-sm text-gray-700 mb-4 border rounded-lg p-3">
+        <div className="text-sm text-gray-900 mb-4 border rounded-lg p-3">
           <p className="font-semibold mb-1">Delivery Address</p>
           <p>
             {shipping.name}, {shipping.addressLine}, {shipping.city},{" "}
@@ -98,14 +101,14 @@ function PlaceOrder() {
         {/* ACTIONS */}
         <button
           onClick={placeOrder}
-          className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#244235]"
+          className="w-full bg-[#2F4F3E] text-white text-lg font-bold py-3 rounded-lg hover:bg-[#244235]"
         >
           Place Order (Cash on Delivery)
         </button>
 
         <button
           onClick={() => navigate(-1)}
-          className="w-full mt-3 border py-2 rounded-lg text-sm hover:bg-gray-100"
+          className="w-full mt-3 border py-2 rounded-lg text-lg hover:bg-[#57816b] bg-[#2F4F3E] text-white font-bold "
         >
           ← Back
         </button>

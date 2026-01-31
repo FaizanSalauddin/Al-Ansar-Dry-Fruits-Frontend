@@ -201,14 +201,14 @@ function Profile() {
                     <p className="text-sm mt-1">📞 {addr.phone}</p>
                   </div>
 
-                  <div className="flex flex-col gap-2 items-end self-start min-w-[110px]">
+                  <div className="flex flex-row sm:flex-col gap-2 items-center sm:items-end self-center sm:self-start min-w-[110px] w-full sm:w-auto mt-2 sm:mt-0">
                     <button
                       onClick={() => openEditForm(addr)}
                       className="
-      w-full
+      flex-1 sm:w-full
       flex items-center justify-center
       text-blue-700 bg-blue-100
-      px-4 py-1.5 rounded-lg text-sm font-medium
+      px-3 py-1.5 rounded-lg text-sm font-medium
       hover:bg-blue-600 hover:text-white
       transition duration-200 ease-in-out
       shadow-sm hover:shadow-md
@@ -220,10 +220,10 @@ function Profile() {
                     <button
                       onClick={() => deleteAddress(addr._id)}
                       className="
-      w-full
+      flex-1 sm:w-full
       flex items-center justify-center
       text-red-700 bg-red-100
-      px-4 py-1.5 rounded-lg text-sm font-medium
+      px-3 py-1.5 rounded-lg text-sm font-medium
       hover:bg-red-600 hover:text-white
       transition duration-200 ease-in-out
       shadow-sm hover:shadow-md

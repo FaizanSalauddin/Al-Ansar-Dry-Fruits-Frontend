@@ -65,7 +65,8 @@ function Navbar() {
     "/my-orders",
     "/checkout",
     "/order-summary",
-    "/orders"
+    "/orders",
+    "/place-order"
   ];
 
   const shouldHideSearch = hideSearchOnRoutes.some((path) =>

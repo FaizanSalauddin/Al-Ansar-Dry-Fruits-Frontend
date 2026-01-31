@@ -1,5 +1,6 @@
 import { useCart } from "../context/CartContext";
 import { Link, useNavigate } from "react-router-dom";
+import CheckoutSteps from "../components/CheckoutSteps";
 
 function Cart() {
   const navigate = useNavigate();
@@ -36,12 +37,16 @@ function Cart() {
     100
   );
 
+
   return (
+
     <div className="min-h-screen bg-[#F5EFE6] px-4 py-6">
       <div className="max-w-5xl mx-auto">
         <h1 className="text-2xl md:text-3xl font-bold text-[#2F4F3E] mb-6">
           Your Cart
         </h1>
+
+        <CheckoutSteps currentStep="cart" />
 
         {/* 🔔 FREE DELIVERY BANNER */}
         <div className="bg-white rounded-xl shadow p-4 mb-6">
@@ -114,10 +119,9 @@ function Cart() {
                     disabled={item.quantity >= 5}
                     onClick={() => increaseQty(item._id)}
                     className={`px-2 py-1 rounded 
-                      ${
-                        item.quantity >= 5
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-green-600 text-white"
+                      ${item.quantity >= 5
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-green-600 text-white"
                       }`}
                   >
                     +
@@ -127,7 +131,13 @@ function Cart() {
 
               <button
                 onClick={() => removeFromCart(item._id)}
-                className="text-red-600 text-sm hover:underline"
+                className="pl-5 
+      flex items-center justify-center
+      text-red-700 bg-red-100
+      px-4 py-1.5 rounded-lg text-sm font-medium
+      hover:bg-red-600 hover:text-white
+      transition duration-200 ease-in-out
+      shadow-sm hover:shadow-md"
               >
                 Remove
               </button>
@@ -135,28 +145,27 @@ function Cart() {
           ))}
         </div>
 
-      {/* SUMMARY */}
-<div className="bg-white rounded-xl shadow p-5 mt-8">
-  <div className="flex flex-col gap-3">
+        {/* SUMMARY */}
+        <div className="bg-white rounded-xl shadow p-5 mt-8">
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate("/checkout")}
+              className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg"
+            >
+              Proceed to Checkout →
+            </button>
+            <button
+              onClick={() => navigate("/products")}
+              className="w-full border bg-[#2c553f] border-[#2F4F3E] text-white py-3 mb-3 rounded-lg  "
+            >
+              ← Continue Shopping
+            </button>
 
-    {/* CONTINUE SHOPPING */}
-    <button
-      onClick={() => navigate("/products")}
-      className="w-full border border-[#2F4F3E] text-[#2F4F3E] py-3 rounded-lg hover:bg-[#F5EFE6] transition"
-    >
-      ← Continue Shopping
-    </button>
 
-    {/* PROCEED */}
-    <button
-      onClick={() => navigate("/checkout")}
-      className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg hover:bg-[#243C30] transition"
-    >
-      Proceed to Checkout
-    </button>
 
-  </div>
-</div>
+          </div>
+        </div>
+
 
       </div>
     </div>
