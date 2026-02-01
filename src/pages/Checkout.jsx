@@ -177,11 +177,34 @@ function Checkout() {
           <div className="bg-white p-6 rounded-xl shadow mt-10 ">
             <h2 className="text-xl font-bold text-[#2F4F3E] mb-5 mt-5">Order Summary</h2>
 
-            <div className="space-y-3 mb-6">
+            <div className="space-y-4 mb-6">
               {cart.items.map((item) => (
-                <div key={item._id} className="flex justify-between text-sm border-b pb-2">
-                  <span>{item.name} (x{item.quantity})</span>
-                  <span className="font-semibold">₹{item.price * item.quantity}</span>
+                <div
+                  key={item._id}
+                  className="flex items-center justify-between gap-4 border-b pb-3"
+                >
+                  {/* LEFT: IMAGE + NAME */}
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={item.image || "/no-image.png"}
+                      alt={item.name}
+                      className="w-16 h-16 object-cover rounded-lg border"
+                    />
+
+                    <div className="text-sm">
+                      <p className="font-semibold text-[#2F4F3E]">
+                        {item.name}
+                      </p>
+                      <p className="text-gray-600">
+                        Qty: {item.quantity}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* RIGHT: PRICE */}
+                  <div className="text-sm font-bold text-gray-800">
+                    ₹{item.price * item.quantity}
+                  </div>
                 </div>
               ))}
             </div>

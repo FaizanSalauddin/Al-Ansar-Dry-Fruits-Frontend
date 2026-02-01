@@ -1,20 +1,27 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import userApi from "../api/userApi";
 import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
 import CheckoutSteps from "../components/CheckoutSteps";
+import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 
 function PlaceOrder() {
   const navigate = useNavigate();
+  const stripe = useStripe();
+  const elements = useElements();
+
   const { cart, fetchCart } = useCart();
+  const shipping = JSON.parse(localStorage.getItem("shippingAddress"));
 
-  const shipping = JSON.parse(
-    localStorage.getItem("shippingAddress")
-  );
+  const [loading, setLoading] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("cod"); // ✅ NEW
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
-  // 🔐 SAFETY CHECKS
+  // 🔐 SAFETY
   useEffect(() => {
+    if (isPlacingOrder) return;
+
     if (!cart || cart.items.length === 0) {
       navigate("/cart");
       return;
@@ -23,95 +30,183 @@ function PlaceOrder() {
     if (!shipping) {
       navigate("/checkout");
     }
-  }, [cart, shipping, navigate]);
+  }, [cart, shipping, navigate, isPlacingOrder]);
+
 
   if (!cart || !shipping) return null;
 
-  // 💰 PRICE CALCULATION (SAME AS BACKEND)
+  // 💰 PRICE
   const itemsPrice = cart.totalPrice;
   const shippingPrice = itemsPrice >= 1000 ? 0 : 50;
   const totalPrice = itemsPrice + shippingPrice;
 
-  const placeOrder = async () => {
-    try {
-      const payload = {
-        name: shipping.name,
-        address: shipping.addressLine, // 🔥 FIX HERE
-        city: shipping.city,
-        state: shipping.state,
-        pincode: shipping.pincode,
-        phone: shipping.phone,
-      };
+  // 📦 ADDRESS PAYLOAD
+  const shippingPayload = {
+    name: shipping.name,
+    address: shipping.addressLine,
+    city: shipping.city,
+    state: shipping.state,
+    pincode: shipping.pincode,
+    phone: shipping.phone,
+  };
 
-      await userApi.post("/orders/from-cart", {
-        shippingAddress: payload,
+  // ================= COD =================
+  const placeOrderCOD = async () => {
+    try {
+      setIsPlacingOrder(true);
+      setLoading(true);
+
+      const { data } = await userApi.post("/orders/from-cart", {
+        shippingAddress: shippingPayload,
         paymentMethod: "cod",
       });
 
-      toast.success("Order placed successfully 🎉");
+      await fetchCart();
+      localStorage.setItem("lastOrder", JSON.stringify(data.order));
       localStorage.removeItem("shippingAddress");
-      fetchCart();
-      navigate("/home");
+
+      toast.success("Order placed successfully 🎉");
+      navigate("/order-success", { replace: true });
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Order failed"
-      );
+      toast.error(err.response?.data?.message || "Order failed");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // ================= ONLINE PAYMENT =================
+  const payOnline = async () => {
+    if (!stripe || !elements) return;
 
+    try {
+      setIsPlacingOrder(true);
+      setLoading(true);
+
+      const { data } = await userApi.post("/payments/create-intent", {
+        amount: totalPrice,
+      });
+
+      const result = await stripe.confirmCardPayment(data.clientSecret, {
+        payment_method: {
+          card: elements.getElement(CardElement),
+          billing_details: {
+            name: shipping.name,
+            phone: shipping.phone,
+          },
+        },
+      });
+
+      if (result.error) {
+        toast.error(result.error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (result.paymentIntent.status === "succeeded") {
+        const { data: orderRes } = await userApi.post("/orders/from-cart", {
+          shippingAddress: shippingPayload,
+          paymentMethod: "online",
+          paymentResult: {
+            id: result.paymentIntent.id,
+            status: result.paymentIntent.status,
+            update_time: new Date().toISOString(),
+            email_address: "paid-via-stripe",
+          },
+        });
+
+        await fetchCart();
+        localStorage.setItem("lastOrder", JSON.stringify(orderRes.order));
+        localStorage.removeItem("shippingAddress");
+
+        toast.success("Payment Successful 🎉");
+        navigate("/order-success", { replace: true });
+      }
+    } catch (err) {
+      toast.error("Payment failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F5EFE6] flex items-center justify-center px-4">
       <div className="bg-white p-6 rounded-xl shadow w-full max-w-md">
 
-        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-10 text-center">
-          Payment
-        </h2>
         <CheckoutSteps currentStep="payment" />
 
-        {/* 📦 SHIPPING */}
-        <div className="text-sm text-gray-900 mb-4 border rounded-lg p-3">
-          <p className="font-semibold mb-1">Delivery Address</p>
-          <p>
-            {shipping.name}, {shipping.addressLine}, {shipping.city},{" "}
-            {shipping.state} - {shipping.pincode}
-          </p>
-          <p className="mt-1">📞 {shipping.phone}</p>
+        <h2 className="text-2xl font-bold text-[#2F4F3E] mb-4 text-center">
+          Select Payment Method
+        </h2>
+
+        {/* 🔘 PAYMENT METHOD */}
+        <div className="space-y-3 mb-6">
+          <label className="flex gap-2 items-center">
+            <input
+              type="radio"
+              checked={paymentMethod === "cod"}
+              onChange={() => setPaymentMethod("cod")}
+            />
+            Cash on Delivery
+          </label>
+
+          <label className="flex gap-2 items-center">
+            <input
+              type="radio"
+              checked={paymentMethod === "online"}
+              onChange={() => setPaymentMethod("online")}
+            />
+            Pay Online (Card / UPI)
+          </label>
         </div>
 
-        {/* 💰 PRICE SUMMARY */}
-        <div className="border rounded-lg p-3 mb-4 text-sm space-y-2">
+        {/* 💰 SUMMARY */}
+        <div className="border rounded-lg p-3 mb-4 text-sm">
           <div className="flex justify-between">
-            <span>Items Price</span>
+            <span>Items</span>
             <span>₹{itemsPrice}</span>
           </div>
-
           <div className="flex justify-between">
             <span>Delivery</span>
             <span>{shippingPrice === 0 ? "FREE" : "₹50"}</span>
           </div>
-
-          <div className="flex justify-between font-bold text-base border-t pt-2">
+          <div className="flex justify-between font-bold border-t pt-2">
             <span>Total</span>
             <span>₹{totalPrice}</span>
           </div>
         </div>
 
-        {/* ACTIONS */}
-        <button
-          onClick={placeOrder}
-          className="w-full bg-[#2F4F3E] text-white text-lg font-bold py-3 rounded-lg hover:bg-[#244235]"
-        >
-          Place Order (Cash on Delivery)
-        </button>
+        {/* 🟢 COD BUTTON */}
+        {paymentMethod === "cod" && (
+          <button
+            disabled={loading}
+            onClick={placeOrderCOD}
+            className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg font-bold"
+          >
+            Place Order (COD)
+          </button>
+        )}
+
+        {/* 🔵 ONLINE PAYMENT */}
+        {paymentMethod === "online" && (
+          <div className="border rounded-lg p-3">
+            <CardElement className="border p-2 rounded" />
+            <button
+              disabled={loading}
+              onClick={payOnline}
+              className="mt-3 w-full bg-[#2F4F3E] text-white py-3 rounded-lg font-bold"
+            >
+              Pay ₹{totalPrice}
+            </button>
+          </div>
+        )}
 
         <button
           onClick={() => navigate(-1)}
-          className="w-full mt-3 border py-2 rounded-lg text-lg hover:bg-[#57816b] bg-[#2F4F3E] text-white font-bold "
+          className="w-full mt-4 border py-2 rounded-lg"
         >
           ← Back
         </button>
+
       </div>
     </div>
   );

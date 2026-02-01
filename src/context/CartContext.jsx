@@ -15,6 +15,10 @@ export const CartProvider = ({ children }) => {
 
 
     useEffect(() => {
+        if (!user?.token) {
+            setCart(null);
+            return;
+        }
         fetchCart();
     }, [user?.token]);
 

@@ -12,11 +12,12 @@ import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import OrderDetail from "./pages/OrderDetail";
+import OrderSuccess from "./pages/OrderSuccess";
 // import OrderSummary from "./pages/OrderSummary";
 import PlaceOrder from "./pages/PlaceOrder";
 import Profile from "./pages/Profile";
 import EditAddress from "./pages/EditAddress";
-
+import Payment from "./pages/Payment";
 /* LAYOUTS */
 import MainLayout from "./layouts/MainLayout";
 
@@ -55,6 +56,8 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/my-orders" element={<MyOrders />} />
           <Route path="/orders/:id" element={<OrderDetail />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
           {/* <Route path="/order-summary" element={<OrderSummary />} /> */}
           <Route path="/place-order" element={<PlaceOrder />} />
           <Route path="/profile" element={<Profile />} />
@@ -77,6 +80,7 @@ function App() {
             <Route path="users" element={<AdminUsers />} />
             <Route path="stock-report" element={<StockReport />} />
             <Route path="profile" element={<AdminProfile />} />
+
           </Route>
         </Route>
 
