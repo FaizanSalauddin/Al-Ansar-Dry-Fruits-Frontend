@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,Fragment} from "react";
 import adminApi from "../../api/adminApi";
 import { toast } from "react-toastify";
-import { Link } from "react-router-dom";
+import { Link} from "react-router-dom";
 import {
   Users,
   User,
@@ -24,58 +24,6 @@ import {
   Truck,
   Clock
 } from "lucide-react";
-
-// Helper functions (already defined above, need to move inside or keep outside)
-const formatDate = (dateString) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
-};
-
-const formatShortDate = (dateString) => {
-  if (!dateString) return "N/A";
-  const date = new Date(dateString);
-  const day = date.getDate();
-  const suffix = getDaySuffix(day);
-  const month = date.toLocaleDateString('en-IN', { month: 'short' });
-  const year = date.getFullYear();
-
-  return `${day}${suffix} ${month} ${year}`;
-};
-
-const getDaySuffix = (day) => {
-  if (day > 3 && day < 21) return 'th';
-  switch (day % 10) {
-    case 1: return "st";
-    case 2: return "nd";
-    case 3: return "rd";
-    default: return "th";
-  }
-};
-
-
-
-const ChevronRight = (props) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    {...props}
-  >
-    <path d="m9 18 6-6-6-6" />
-  </svg>
-);
-
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -100,36 +48,19 @@ const AdminUsers = () => {
       setRefreshing(false);
     }
   };
-  
-  const XCircle = (props) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <circle cx="12" cy="12" r="10" />
-      <path d="m15 9-6 6" />
-      <path d="m9 9 6 6" />
-    </svg>
-  );
-  const fetchUserOrders = async (userId) => {
-    try {
-      const { data } = await adminApi.get(`/users/${userId}/orders`);
-      setUserOrders(prev => ({
-        ...prev,
-        [userId]: data.orders || []
-      }));
-    } catch (error) {
-      console.error("Failed to fetch user orders:", error);
-    }
-  };
+
+ const fetchUserOrders = async (userId) => {
+  try {
+    const { data } = await adminApi.get(`/users/${userId}/orders`);
+    setUserOrders(prev => ({
+      ...prev,
+      [userId]: Array.isArray(data) ? data : data.orders || []
+    }));
+  } catch (error) {
+    console.error("Failed to fetch user orders:", error);
+  }
+};
+
 
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user? This action cannot be undone.")) return;
@@ -147,8 +78,6 @@ const AdminUsers = () => {
       toast.error("Failed to delete user");
     }
   };
-
-
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -210,29 +139,51 @@ const AdminUsers = () => {
   };
 
   /* ================= STATS ================= */
+  // Calculate total orders by summing orders from all users
+  const calculateTotalOrders = () => {
+    let total = 0;
+    Object.values(userOrders).forEach(orders => {
+      total += orders.length;
+    });
+    return total;
+  };
+
   const stats = {
     total: users.length,
     customers: users.filter(u => u.role === 'user').length,
     admins: users.filter(u => u.role === 'admin').length,
-    // Calculate total orders from all users
-    totalOrders: users.reduce((total, user) => total + (user.ordersCount || 0), 0),
+    totalOrders: calculateTotalOrders(),
   };
 
   /* ================= ORDER STATS ================= */
   const getUserOrderStats = (userId) => {
     const orders = userOrders[userId] || [];
+
+    const totalSpent = orders.reduce((sum, order) => {
+      if (order.totalPrice) return sum + order.totalPrice;
+
+      // fallback calculation
+      const itemsTotal = (order.orderItems || []).reduce(
+        (itemSum, item) => itemSum + (item.price || 0) * (item.quantity || 0),
+        0
+      );
+
+      const shipping = order.shippingPrice || 0;
+
+      return sum + itemsTotal + shipping;
+    }, 0);
+
     return {
       totalOrders: orders.length,
-      totalSpent: orders.reduce((sum, order) => sum + (order.totalPrice || 0), 0),
+      totalSpent,
       pendingOrders: orders.filter(o => o.orderStatus === 'pending').length,
       deliveredOrders: orders.filter(o => o.orderStatus === 'delivered').length,
+      cancelledOrders: orders.filter(o => o.orderStatus === 'cancelled').length,
+      inTransitOrders: orders.filter(o => o.orderStatus === 'in-transit').length,
       lastOrder: orders.length > 0 ? orders[0] : null
     };
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
 
   /* ================= FORMAT DATE ================= */
   const formatDate = (dateString) => {
@@ -305,19 +256,9 @@ const AdminUsers = () => {
     );
   };
 
-  const getStatusBadge = (isActive) => {
-    return isActive !== false ? (
-      <span className="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium flex items-center gap-1">
-        <CheckCircle size={12} />
-        Active
-      </span>
-    ) : (
-      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium flex items-center gap-1">
-        <XCircle size={12} />
-        Inactive
-      </span>
-    );
-  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   if (loading && users.length === 0) {
     return (
@@ -329,7 +270,6 @@ const AdminUsers = () => {
       </div>
     );
   }
-
 
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -406,15 +346,7 @@ const AdminUsers = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Total Orders</p>
-              <p className="text-2xl font-bold text-indigo-600">{stats.totalOrders}</p>
-            </div>
-            <ShoppingBag className="text-indigo-500" size={24} />
-          </div>
-        </div>
+
       </div>
 
       {/* Filters */}
@@ -488,9 +420,9 @@ const AdminUsers = () => {
                     <th className="p-4 text-left font-semibold text-gray-700 border-b cursor-pointer" onClick={() => handleSort('email')}>
                       <div className="flex items-center gap-1">
                         Email
-                        {sortConfig.key === 'email' && (
+                        {/* {sortConfig.key === 'email' && (
                           sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />
-                        )}
+                        )} */}
                       </div>
                     </th>
                     <th className="p-4 text-left font-semibold text-gray-700 border-b">Orders</th>
@@ -513,7 +445,7 @@ const AdminUsers = () => {
                     const orderStats = getUserOrderStats(user._id);
 
                     return (
-                      <>
+                      <Fragment key={user._id}>
                         <tr key={user._id} className="border-t hover:bg-gray-50 transition-colors">
                           <td className="p-4">
                             <div className="flex items-center gap-3">
@@ -616,7 +548,9 @@ const AdminUsers = () => {
                                       className="text-sm text-emerald-600 hover:text-emerald-700 flex items-center gap-1"
                                     >
                                       View all orders
-                                      <ChevronRight size={14} />
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="m9 18 6-6-6-6" />
+                                      </svg>
                                     </Link>
                                   )}
                                 </div>
@@ -722,7 +656,7 @@ const AdminUsers = () => {
                             </td>
                           </tr>
                         )}
-                      </>
+                      </Fragment>
                     );
                   })}
                 </tbody>
@@ -895,19 +829,57 @@ const AdminUsers = () => {
 
 // Separate Modal Component for User Details
 const UserDetailsModal = ({ user, onClose, onDelete, orderStats, userOrders }) => {
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  };
+
+
+
+  const getDaySuffix = (day) => {
+    if (day > 3 && day < 21) return 'th';
+    switch (day % 10) {
+      case 1: return "st";
+      case 2: return "nd";
+      case 3: return "rd";
+      default: return "th";
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 p-4 backdrop-blur-sm">
       <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b px-6 py-4 flex justify-between items-center">
           <div>
             <h2 className="text-xl font-bold text-gray-800">User Details</h2>
-            <p className="text-sm text-gray-500">User ID: {user._id.slice(-8)}</p>
+            <p className="text-sm text-gray-500">User ID: {user._id}</p>
           </div>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-full transition-colors"
           >
-            <XCircle className="text-gray-500" size={24} />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-gray-500"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <path d="m15 9-6 6" />
+              <path d="m9 9 6 6" />
+            </svg>
           </button>
         </div>
 
@@ -944,7 +916,7 @@ const UserDetailsModal = ({ user, onClose, onDelete, orderStats, userOrders }) =
           </div>
 
           {/* Order Statistics */}
-          <div className="bg-gray-50 p-4 rounded-xl">
+          {/* <div className="bg-gray-50 p-4 rounded-xl">
             <h3 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
               <ShoppingBag size={16} />
               Order Statistics
@@ -970,10 +942,10 @@ const UserDetailsModal = ({ user, onClose, onDelete, orderStats, userOrders }) =
                 <p className="text-2xl font-bold text-emerald-600">{orderStats.deliveredOrders}</p>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* Recent Orders */}
-          {orderStats.totalOrders > 0 && (
+          {/* {orderStats.totalOrders > 0 && (
             <div className="bg-gray-50 p-4 rounded-xl">
               <h3 className="font-semibold text-gray-700 mb-3">Recent Orders</h3>
               <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -1017,7 +989,7 @@ const UserDetailsModal = ({ user, onClose, onDelete, orderStats, userOrders }) =
                 </Link>
               )}
             </div>
-          )}
+          )} */}
 
           {/* Actions */}
           <div className="flex gap-3">
@@ -1047,6 +1019,5 @@ const UserDetailsModal = ({ user, onClose, onDelete, orderStats, userOrders }) =
     </div>
   );
 };
-
 
 export default AdminUsers;

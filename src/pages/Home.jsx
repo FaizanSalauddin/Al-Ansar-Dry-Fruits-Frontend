@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLoader } from "../context/LoaderContext";
 import ProductCard from "../components/ProductCard";
 import CategoryCard from "../components/CategoryCard";
+import { Flame, Tag } from "lucide-react";
 import userApi from "../api/userApi";
 
 function Home() {
@@ -33,7 +34,7 @@ function Home() {
 
       const el = desktopScrollRef.current;
 
-      el.scrollLeft += 1; 
+      el.scrollLeft += 1;
 
       // Infinite loop
       if (
@@ -141,13 +142,30 @@ function Home() {
   const bestSellers = products.slice(0, 8); // 👈 top items
 
   return (
-    <div className="bg-[#F5EFE6] min-h-screen">
+    <div className="bg-[#F5EFE6] min-h-screen pb-8">
 
       {/* ================= CATEGORIES ================= */}
-      <section className="px-4 pb-12">
-        <h2 className="text-3xl font-bold text-[#2F4F3E] mb-6 pt-3">
-          Shop By Category
-        </h2>
+      <section className="px-4 md:px-6 pb-10 pt-4">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-[#2F4F3E]/10 rounded-lg">
+              <Tag className="text-[#2F4F3E]" size={24} />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2F4F3E]">
+              Shop By Category
+            </h2>
+          </div>
+
+          {/* Indicators for mobile */}
+          <div className="md:hidden flex items-center gap-2">
+            {filteredCategories.map((_, i) => (
+              <div
+                key={i}
+                className={`w-2 h-2 rounded-full transition-all ${i === index ? 'bg-[#2F4F3E] w-4' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
+        </div>
 
         {/* ================= MOBILE CAROUSEL ================= */}
         <div
@@ -213,19 +231,26 @@ function Home() {
       </section>
 
       {/* ================= BEST SELLERS SLIDER ================= */}
-      <section className="px-4 pb-12">
-        <h2 className="text-3xl font-bold text-[#2F4F3E] mb-6">
-          Best Sellers
-        </h2>
+      <section className="px-4 md:px-6 pb-10">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Flame className="text-orange-600" size={24} />
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2F4F3E]">
+              Best Sellers
+            </h2>
+          </div>
+        </div>
 
         <div
           ref={bestSellerRef}
           onMouseEnter={stopBestSellerScroll}
           onMouseLeave={startBestSellerScroll}
-          className="flex gap-4 overflow-x-scroll no-scrollbar pb-5"
+          className="flex gap-5 overflow-x-scroll no-scrollbar pb-5 px-1"
         >
           {[...bestSellers, ...bestSellers].map((p, i) => (
-            <div key={p._id + i} className="min-w-[220px]">
+            <div key={p._id + i} className="min-w-[240px] md:min-w-[260px]">
               <ProductCard product={p} />
             </div>
           ))}
@@ -234,7 +259,7 @@ function Home() {
 
       {/* ================= ALL PRODUCTS GRID ================= */}
       <section className="px-4 pb-16">
-          {products.length === 0 ? (
+        {products.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl shadow-sm">
             <div className="w-20 h-20 mx-auto mb-4 text-gray-400">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
