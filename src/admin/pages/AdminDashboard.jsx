@@ -373,8 +373,8 @@ const AdminDashboard = () => {
                     key={t.value}
                     onClick={() => setChartTimeframe(t.value)}
                     className={`px-3 py-1.5 text-xs font-medium rounded-md capitalize transition-all whitespace-nowrap ${chartTimeframe === t.value
-                        ? "bg-white shadow-sm text-emerald-600"
-                        : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white shadow-sm text-emerald-600"
+                      : "text-gray-500 hover:text-gray-700"
                       }`}
                   >
                     {t.label}
@@ -393,8 +393,8 @@ const AdminDashboard = () => {
             </p>
           </div>
 
-          <div className="w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
               <BarChart
                 data={chartData}
                 margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
@@ -405,6 +405,10 @@ const AdminDashboard = () => {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
+                  interval={0}
+                  minTickGap={8}
+                  angle={0}
+                  height={40}
                   tick={{ fill: '#6B7280' }}
                 />
                 <YAxis
@@ -436,8 +440,8 @@ const AdminDashboard = () => {
             </div>
           </div>
 
-          <div className="w-full h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="w-full min-h-[300px]">
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={pieData}
@@ -466,6 +470,7 @@ const AdminDashboard = () => {
               </PieChart>
             </ResponsiveContainer>
           </div>
+
         </div>
       </div>
 

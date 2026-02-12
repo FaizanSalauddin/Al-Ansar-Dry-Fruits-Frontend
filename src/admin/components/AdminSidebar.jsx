@@ -56,9 +56,9 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-3 bg-emerald-600 text-white rounded-xl shadow-lg"
+          className="bg-emerald-600 text-white pt-2 pb-2 pl-2 pr-2 rounded-lg hover:bg-emerald-700 transition"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X size={24} /> : <Menu size={20} />}
         </button>
       </div>
 
@@ -88,15 +88,15 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
           ${isOpen ? "lg:w-72" : "lg:w-0 lg:overflow-hidden"}
         `}
       >
-        <div className="w-72 h-full flex flex-col">
+        <div className="w-72 h-full flex flex-col mt-10">
           {/* BRAND */}
           <div className="px-6 py-8 border-b border-gray-800">
             <div className="flex items-center gap-3">
-              <div className="p-3 bg-emerald-600 rounded-xl">
+              <div className="p-3 bg-emerald-600 rounded-xl mt-10">
                 <Shield size={24} className="text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-2xl font-bold text-white mt-10">
                   Al-Ansar <span className="text-emerald-400">Admin</span>
                 </h1>
                 <p className="text-xs text-gray-400">Premium Dashboard</p>
@@ -134,7 +134,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
           </div>
 
           {/* LOGOUT */}
-          <div className="p-4 border-t border-gray-800">
+          <div className="p-4 mb-10 border-t border-gray-800">
             <button
               onClick={handleLogout}
               className="flex items-center gap-3 w-full px-4 py-3.5 rounded-xl text-red-400 hover:bg-red-500 hover:text-white transition-all"

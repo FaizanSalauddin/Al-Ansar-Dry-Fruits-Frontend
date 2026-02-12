@@ -8,7 +8,6 @@ import {
   Trash2,
   Package,
   Tag,
-  DollarSign,
   Layers,
   ToggleLeft,
   ToggleRight,
@@ -22,7 +21,8 @@ import {
   Eye,
   MoreVertical,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  IndianRupee
 } from "lucide-react";
 
 function AdminProducts() {
@@ -179,7 +179,7 @@ function AdminProducts() {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-70"
+            className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base"
           >
             {refreshing ? (
               <>
@@ -196,11 +196,13 @@ function AdminProducts() {
 
           <Link
             to="/admin/products/add"
-            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg hover:from-emerald-700 hover:to-emerald-800 transition-all flex items-center gap-2 shadow-lg shadow-emerald-200"
+            className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base"
           >
             <Plus size={18} />
             Add Product
           </Link>
+
+
         </div>
       </div>
 
@@ -244,16 +246,16 @@ function AdminProducts() {
                 ₹{stats.totalValue.toLocaleString('en-IN')}
               </p>
             </div>
-            <DollarSign className="text-indigo-500" size={24} />
+            <IndianRupee className="text-indigo-500" size={24} />
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6">
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row md:items-center gap-4">
         <div className="flex items-center gap-2 mb-3">
           <Filter size={18} className="text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">Filter by:</span>
+          <span className="text-lg font-medium text-gray-700">Filter By:</span>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -399,7 +401,7 @@ function AdminProducts() {
 
                         <td className="p-4">
                           <div className="flex items-center gap-1 font-bold text-gray-800">
-                            <DollarSign size={14} />
+                            <IndianRupee size={14} />
                             {product.price.toLocaleString('en-IN')}
                           </div>
                         </td>
@@ -549,7 +551,7 @@ function AdminProducts() {
                       <p className="text-xs text-gray-500 mb-1">{product.category}</p>
                       <div className="flex items-center gap-2">
                         <span className="text-lg font-bold text-gray-800 flex items-center gap-1">
-                          <DollarSign size={14} />
+                          <IndianRupee size={14} />
                           {product.price.toLocaleString('en-IN')}
                         </span>
                         <span className={`text-sm font-medium px-2 py-1 rounded-full ${product.stockQuantity < 5

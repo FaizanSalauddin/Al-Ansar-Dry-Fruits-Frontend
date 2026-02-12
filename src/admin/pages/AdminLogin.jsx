@@ -30,7 +30,6 @@ const AdminLogin = () => {
 
       localStorage.setItem("adminInfo", JSON.stringify(data));
       toast.success("Welcome back, Admin!");
-      localStorage.removeItem("userInfo");
       navigate("/admin");
     } catch (err) {
       toast.error(err.response?.data?.message || "Admin login failed");

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import adminApi from "../../api/adminApi";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
   CalendarDays,
@@ -28,6 +29,12 @@ import {
 } from "lucide-react";
 
 function AdminOrders() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const queryParams = new URLSearchParams(location.search);
+  const userFilter = queryParams.get("user");
+
   const [orders, setOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [status, setStatus] = useState("");
@@ -44,6 +51,11 @@ function AdminOrders() {
     try {
       setLoading(true);
       let url = "/orders";
+
+      if (userFilter) {
+        url += `?user=${userFilter}`;
+      }
+
 
       if (activeFilter === "today") url += "?date=today";
       if (activeFilter === "pending") url += "?status=pending";
@@ -66,7 +78,7 @@ function AdminOrders() {
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchOrders(filter);
-     toast.success("Orders Refreshed Successfully!");
+    toast.success("Orders Refreshed Successfully!");
   };
 
   /* ================= DATE FORMATTER ================= */
@@ -316,7 +328,7 @@ function AdminOrders() {
             <p className="font-medium mb-1">Current Status</p>
             {getStatusBadge(order.orderStatus, order.paymentMethod, order.isPaid)}
           </div>
-          
+
           {order.estimatedDeliveryDate ? (
             <div className="text-sm">
               <p className="font-medium mb-1">Estimated Delivery</p>
@@ -358,9 +370,22 @@ function AdminOrders() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Orders Management
-          </h1>
+          <div className="flex items-center gap-3">
+            {userFilter && (
+              <button
+                onClick={() => navigate("/admin/users")}
+                className="px-3 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300"
+              >
+                ← Back to Users
+              </button>
+            )}
+            <div>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                Orders Management
+              </h1>
+            </div>
+          </div>
+
           <p className="text-gray-500 mt-1">Manage and track all customer orders</p>
         </div>
 

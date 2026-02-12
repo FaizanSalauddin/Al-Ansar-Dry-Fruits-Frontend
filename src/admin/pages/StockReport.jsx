@@ -208,7 +208,7 @@ const StockReport = () => {
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2 disabled:opacity-70"
+            className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base"
           >
             {refreshing ? (
               <>
@@ -225,7 +225,9 @@ const StockReport = () => {
 
           <button
             onClick={exportToCSV}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2"
+            //px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2
+            //px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base
+            className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-all flex items-center gap-2 whitespace-nowrap text-sm sm:text-base"
           >
             <Download size={18} />
             Export CSV
@@ -309,8 +311,8 @@ const StockReport = () => {
               key={key}
               onClick={() => setFilter(key)}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${filter === key
-                  ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-200"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-200"
+                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
             >
               {key === 'critical-stock' && <AlertTriangle size={14} />}

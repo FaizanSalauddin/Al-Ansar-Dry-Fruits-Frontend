@@ -1,7 +1,7 @@
-import { useEffect, useState,Fragment} from "react";
+import { useEffect, useState, Fragment } from "react";
 import adminApi from "../../api/adminApi";
 import { toast } from "react-toastify";
-import { Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Users,
   User,
@@ -40,7 +40,31 @@ const AdminUsers = () => {
     try {
       setLoading(true);
       const { data } = await adminApi.get("/users");
-      setUsers(data.users || []);
+      const usersList = data.users || [];
+      setUsers(usersList);
+
+      // 🔹 Fetch orders for all users
+      const ordersMap = {};
+
+      await Promise.all(
+        usersList.map(async (user) => {
+          try {
+            const res = await adminApi.get(`/users/${user._id}/orders`);
+
+            let orders = [];
+            if (Array.isArray(res.data)) orders = res.data;
+            else if (Array.isArray(res.data.orders)) orders = res.data.orders;
+            else if (Array.isArray(res.data.data)) orders = res.data.data;
+
+            ordersMap[user._id] = orders;
+          } catch {
+            ordersMap[user._id] = [];
+          }
+        })
+      );
+
+      setUserOrders(ordersMap);
+
     } catch (error) {
       toast.error("Failed to load users");
     } finally {
@@ -49,17 +73,30 @@ const AdminUsers = () => {
     }
   };
 
- const fetchUserOrders = async (userId) => {
-  try {
-    const { data } = await adminApi.get(`/users/${userId}/orders`);
-    setUserOrders(prev => ({
-      ...prev,
-      [userId]: Array.isArray(data) ? data : data.orders || []
-    }));
-  } catch (error) {
-    console.error("Failed to fetch user orders:", error);
-  }
-};
+
+  const fetchUserOrders = async (userId) => {
+    try {
+      const res = await adminApi.get(`/users/${userId}/orders`);
+
+      let orders = [];
+
+      if (Array.isArray(res.data)) {
+        orders = res.data;
+      } else if (Array.isArray(res.data.orders)) {
+        orders = res.data.orders;
+      } else if (Array.isArray(res.data.data)) {
+        orders = res.data.data;
+      }
+
+      setUserOrders(prev => ({
+        ...prev,
+        [userId]: orders
+      }));
+    } catch (error) {
+      console.error("Failed to fetch user orders:", error);
+    }
+  };
+
 
 
   const deleteUser = async (id) => {
@@ -180,7 +217,12 @@ const AdminUsers = () => {
       deliveredOrders: orders.filter(o => o.orderStatus === 'delivered').length,
       cancelledOrders: orders.filter(o => o.orderStatus === 'cancelled').length,
       inTransitOrders: orders.filter(o => o.orderStatus === 'in-transit').length,
-      lastOrder: orders.length > 0 ? orders[0] : null
+      lastOrder:
+        orders.length > 0
+          ? [...orders].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )[0]
+          : null
     };
   };
 
