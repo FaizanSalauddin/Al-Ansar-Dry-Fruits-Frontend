@@ -2,7 +2,7 @@ import axios from "axios";
 
 const adminApi = axios.create({
   // baseURL: "https://br6r7tz3-5000.inc1.devtunnels.ms//api",
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://al-ansar-dry-fruits-backend.onrender.com/api",
 });
 
 adminApi.interceptors.request.use((req) => {
