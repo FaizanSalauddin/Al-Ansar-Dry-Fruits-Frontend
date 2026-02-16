@@ -49,11 +49,13 @@ function Home() {
       const el = desktopScrollRef.current;
       if (el) {
         el.scrollLeft += 1;
-        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
+
+        const halfWidth = el.scrollWidth / 2;
+        if (el.scrollLeft >= halfWidth) {
           el.scrollLeft = 0;
         }
       }
-    }, 30); // 30ms is smoother for mobile CPUs
+    }, 30);
   }, []);
 
   const startBestSellerScroll = useCallback(() => {
@@ -62,12 +64,15 @@ function Home() {
       const el = bestSellerRef.current;
       if (el) {
         el.scrollLeft += 1;
-        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 1) {
+
+        const halfWidth = el.scrollWidth / 2;
+        if (el.scrollLeft >= halfWidth) {
           el.scrollLeft = 0;
         }
       }
     }, 30);
   }, []);
+
 
   const stopIntervals = () => {
     if (desktopIntervalRef.current) clearInterval(desktopIntervalRef.current);
@@ -89,7 +94,7 @@ function Home() {
   useEffect(() => {
     if (filteredCategories.length > 5) startDesktopScroll();
     if (products.length > 4) startBestSellerScroll();
-    
+
     return stopIntervals;
   }, [filteredCategories.length, products.length, startDesktopScroll, startBestSellerScroll]);
 
@@ -151,8 +156,8 @@ function Home() {
 
         {/* DESKTOP FLOW */}
         <div className="hidden md:block">
-          <div 
-            ref={desktopScrollRef} 
+          <div
+            ref={desktopScrollRef}
             onMouseEnter={() => clearInterval(desktopIntervalRef.current)}
             onMouseLeave={startDesktopScroll}
             className="flex gap-6 overflow-x-auto pb-4 no-scrollbar scroll-smooth"
@@ -174,7 +179,7 @@ function Home() {
           </div>
           <h2 className="text-2xl md:text-3xl font-bold text-[#2F4F3E]">Best Sellers</h2>
         </div>
-        <div 
+        <div
           ref={bestSellerRef}
           onMouseEnter={() => clearInterval(bestSellerInterval.current)}
           onMouseLeave={startBestSellerScroll}

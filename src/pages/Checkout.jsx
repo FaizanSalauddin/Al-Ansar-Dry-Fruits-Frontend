@@ -66,29 +66,55 @@ function Checkout() {
   };
 
   const submitHandler = async (e) => {
-    e.preventDefault();
-    if (!/^[6-9]\d{9}$/.test(formData.phone)) return toast.error("Invalid Phone");
+  e.preventDefault();
 
-    try {
-      let savedData;
-      if (editMode) {
-        const { data } = await userApi.put(`/users/addresses/${editId}`, formData);
-        savedData = data;
-      } else {
-        const { data } = await userApi.post("/users/addresses", formData);
-        savedData = data;
-      }
+  // Name validation
+  if (!/^[A-Za-z\s]{2,50}$/.test(formData.name.trim())) {
+    return toast.error("Enter a valid name");
+  }
 
-      // ✅ Yeh line important hai: State aur LocalStorage dono update honge
-      setSelectedAddress(savedData);
-      localStorage.setItem("shippingAddress", JSON.stringify(savedData));
+  // City validation
+  if (!/^[A-Za-z\s]{2,50}$/.test(formData.city.trim())) {
+    return toast.error("Enter a valid city name");
+  }
 
-      toast.success("Address Saved ✅");
-      setShowForm(false);
-      setEditMode(false);
-      fetchAddresses();
-    } catch (err) { toast.error("Error saving address"); }
-  };
+  // State validation (must match list)
+  if (!INDIAN_STATES.includes(formData.state)) {
+    return toast.error("Please select a valid state");
+  }
+
+  // Pincode validation (6 digits)
+  if (!/^\d{6}$/.test(formData.pincode)) {
+    return toast.error("Enter a valid 6-digit pincode");
+  }
+
+  // Phone validation (Indian format)
+  if (!/^[6-9]\d{9}$/.test(formData.phone)) {
+    return toast.error("Enter a valid 10-digit phone number");
+  }
+
+  try {
+    let savedData;
+    if (editMode) {
+      const { data } = await userApi.put(`/users/addresses/${editId}`, formData);
+      savedData = data;
+    } else {
+      const { data } = await userApi.post("/users/addresses", formData);
+      savedData = data;
+    }
+
+    setSelectedAddress(savedData);
+    localStorage.setItem("shippingAddress", JSON.stringify(savedData));
+
+    toast.success("Address Saved ✅");
+    setShowForm(false);
+    setEditMode(false);
+    fetchAddresses();
+  } catch (err) {
+    toast.error("Error saving address");
+  }
+};
+
 
   // Price Logic
   const subtotal = cart?.items.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;

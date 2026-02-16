@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import adminApi from "../../api/adminApi";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -10,19 +10,28 @@ import "react-datepicker/dist/react-datepicker.css";
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   // States for dynamic filtering
   const [revenueTimeframe, setRevenueTimeframe] = useState("today");
   const [chartTimeframe, setChartTimeframe] = useState("daily");
-  const [customDate, setCustomDate] = useState(new Date());
+  const [customDate, setCustomDate] = useState(() => new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [customDateSelected, setCustomDateSelected] = useState(false);
 
+  // Debounce loading state to prevent flicker
   useEffect(() => {
-    fetchDashboard();
-  }, []);
+    let timer;
+    if (loading) {
+      timer = setTimeout(() => setLoadingTimeout(true), 300);
+    } else {
+      setLoadingTimeout(false);
+    }
+    return () => clearTimeout(timer);
+  }, [loading]);
 
-  const fetchDashboard = async (timeframe = null, date = null) => {
+  // Memoize the fetch function
+  const fetchDashboard = useCallback(async (timeframe = null, date = null) => {
     setLoading(true);
     try {
       const params = {};
@@ -39,9 +48,14 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleRevenueTimeframeChange = (value) => {
+  useEffect(() => {
+    fetchDashboard();
+  }, [fetchDashboard]);
+
+  // Memoize handlers
+  const handleRevenueTimeframeChange = useCallback((value) => {
     setRevenueTimeframe(value);
     setShowDatePicker(false);
 
@@ -51,28 +65,29 @@ const AdminDashboard = () => {
     }
 
     fetchDashboard(value);
-  };
+  }, [fetchDashboard]);
 
-  const handleCustomDateSubmit = () => {
+  const handleCustomDateSubmit = useCallback(() => {
     setCustomDateSelected(true);
     setRevenueTimeframe("custom");
     fetchDashboard("custom", customDate);
     setShowDatePicker(false);
-  };
+  }, [fetchDashboard, customDate]);
 
-  const handleCustomDateCancel = () => {
+  const handleCustomDateCancel = useCallback(() => {
     setShowDatePicker(false);
     if (!customDateSelected) {
       setRevenueTimeframe("today");
       fetchDashboard("today");
     }
-  };
+  }, [fetchDashboard, customDateSelected]);
 
-  const handleCustomDateChange = (date) => {
+  const handleCustomDateChange = useCallback((date) => {
     setCustomDate(date);
-  };
+  }, []);
 
-  const getRevenueByTime = () => {
+  // Memoize computed values
+  const revenueByTime = useMemo(() => {
     if (!stats) return 0;
 
     switch (revenueTimeframe) {
@@ -89,28 +104,26 @@ const AdminDashboard = () => {
       default:
         return stats.totalRevenue;
     }
-  };
+  }, [stats, revenueTimeframe]);
 
-  const getRevenueLabel = () => {
+  const revenueLabel = useMemo(() => {
     switch (revenueTimeframe) {
       case "today":
         return "Today's Revenue";
-      case "thisWeek":
+      case "thisWeek": {
         const today = new Date();
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay() + 1);
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6);
-
         return `This Week (${weekStart.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} - ${weekEnd.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})`;
-
-      case "thisMonth":
+      }
+      case "thisMonth": {
         const monthName = new Date().toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
         return `${monthName} Revenue`;
-
+      }
       case "thisYear":
         return `${new Date().getFullYear()} Revenue`;
-
       case "custom":
         if (customDateSelected) {
           return `Revenue for ${customDate.toLocaleDateString('en-IN', {
@@ -121,13 +134,12 @@ const AdminDashboard = () => {
           })}`;
         }
         return "Select Custom Date";
-
       default:
         return "Total Revenue";
     }
-  };
+  }, [revenueTimeframe, customDateSelected, customDate]);
 
-  const getChartData = () => {
+  const chartData = useMemo(() => {
     if (!stats) return [];
 
     switch (chartTimeframe) {
@@ -142,9 +154,9 @@ const AdminDashboard = () => {
       default:
         return stats.monthlyData || [];
     }
-  };
+  }, [stats, chartTimeframe]);
 
-  const getChartSubtitle = () => {
+  const chartSubtitle = useMemo(() => {
     if (!stats) return "";
 
     switch (chartTimeframe) {
@@ -159,37 +171,53 @@ const AdminDashboard = () => {
       default:
         return "";
     }
-  };
+  }, [stats, chartTimeframe]);
 
-  const getXAxisLabel = (data) => {
-    if (!data || data.length === 0) return "";
+  const xAxisLabel = useMemo(() => {
+    if (!chartData || chartData.length === 0) return "";
 
-    if (chartTimeframe === "monthly" && data[0].fullMonth) {
-      const months = data.map(item => item.name);
+    if (chartTimeframe === "monthly" && chartData[0]?.fullMonth) {
+      const months = chartData.map(item => item.name);
       return `${months[0]} - ${months[months.length - 1]}`;
     }
 
-    if (chartTimeframe === "weekly" && data[0].dateRange) {
-      const firstWeek = data[0].dateRange;
-      const lastWeek = data[data.length - 1].dateRange;
+    if (chartTimeframe === "weekly" && chartData[0]?.dateRange) {
+      const firstWeek = chartData[0].dateRange;
+      const lastWeek = chartData[chartData.length - 1].dateRange;
       return `${firstWeek} to ${lastWeek}`;
     }
 
-    if (chartTimeframe === "daily" && data[0].fullDate) {
-      const firstDate = data[0].fullDate;
-      const lastDate = data[data.length - 1].fullDate;
+    if (chartTimeframe === "daily" && chartData[0]?.fullDate) {
+      const firstDate = chartData[0].fullDate;
+      const lastDate = chartData[chartData.length - 1].fullDate;
       return `${firstDate} - ${lastDate}`;
     }
 
     if (chartTimeframe === "yearly") {
-      const years = data.map(item => item.name);
+      const years = chartData.map(item => item.name);
       return `${years[0]} - ${years[years.length - 1]}`;
     }
 
     return "";
-  };
+  }, [chartData, chartTimeframe]);
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const pieData = useMemo(() => [
+    { name: "Paid", value: stats?.paidOrders || 0, color: "#10B981" },
+    { name: "Unpaid", value: stats?.unpaidOrders || 0, color: "#EF4444" },
+  ], [stats]);
+
+  const statsCards = useMemo(() => [
+    { label: "Total Users", val: stats?.totalUsers || 0, icon: "👥", color: "blue" },
+    { label: "Products", val: stats?.totalProducts || 0, icon: "📦", color: "indigo" },
+    { label: "Total Orders", val: stats?.totalOrders || 0, icon: "🛒", color: "amber" },
+  ], [stats]);
+
+  const formatCurrency = useCallback((amount) => {
+    return new Intl.NumberFormat('en-IN').format(amount);
+  }, []);
+
+  // Memoize tooltip component
+  const CustomTooltip = useCallback(({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -207,23 +235,35 @@ const AdminDashboard = () => {
       );
     }
     return null;
-  };
+  }, [chartTimeframe]);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-IN').format(amount);
-  };
+  // Show loading only after timeout to prevent flash
+  if (loadingTimeout) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-emerald-600 font-semibold flex items-center gap-2">
+          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+          </svg>
+          Loading Futuristic Analytics...
+        </div>
+      </div>
+    );
+  }
 
-  if (loading) return <div className="flex justify-center items-center h-screen text-emerald-600 font-semibold">Loading Futuristic Analytics...</div>;
-  if (!stats) return <div className="flex justify-center items-center h-screen text-red-600 font-semibold">Failed to load analytics</div>;
-
-  const pieData = [
-    { name: "Paid", value: stats.paidOrders, color: "#10B981" },
-    { name: "Unpaid", value: stats.unpaidOrders, color: "#EF4444" },
-  ];
-
-  const chartData = getChartData();
-  const chartSubtitle = getChartSubtitle();
-  const xAxisLabel = getXAxisLabel(chartData);
+  if (!stats) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <button
+          onClick={() => fetchDashboard()}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+        >
+          Retry Loading
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -236,11 +276,7 @@ const AdminDashboard = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
-        {[
-          { label: "Total Users", val: stats.totalUsers, icon: "👥", color: "blue" },
-          { label: "Products", val: stats.totalProducts, icon: "📦", color: "indigo" },
-          { label: "Total Orders", val: stats.totalOrders, icon: "🛒", color: "amber" },
-        ].map((item, i) => (
+        {statsCards.map((item, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div className="text-3xl mb-2">{item.icon}</div>
             <p className="text-sm text-gray-500 font-medium uppercase">{item.label}</p>
@@ -311,8 +347,8 @@ const AdminDashboard = () => {
             </div>
           )}
 
-          <p className="text-sm text-gray-500 font-medium uppercase">{getRevenueLabel()}</p>
-          <h2 className="text-2xl font-bold text-emerald-700">₹{formatCurrency(getRevenueByTime())}</h2>
+          <p className="text-sm text-gray-500 font-medium uppercase">{revenueLabel}</p>
+          <h2 className="text-2xl font-bold text-emerald-700">₹{formatCurrency(revenueByTime)}</h2>
 
           {revenueTimeframe === "custom" && !showDatePicker && customDateSelected && (
             <div className="mt-4 space-y-2">

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import userApi from "../api/userApi";
 import { toast } from "react-toastify";
 import { useAuth } from "./AuthContext";
-
+import { useNavigate } from "react-router-dom"; // add this
 
 const CartContext = createContext();
 
@@ -11,8 +11,10 @@ export const CartProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
     const [loadingProductId, setLoadingProductId] = useState(null);
     const { user } = useAuth();
+    const navigate = useNavigate(); // add this
 
-
+    // store pending action
+    const [pendingAdd, setPendingAdd] = useState(null);
 
     useEffect(() => {
         if (!user?.token) {
@@ -21,7 +23,6 @@ export const CartProvider = ({ children }) => {
         }
         fetchCart();
     }, [user?.token]);
-
 
     // 🔄 Fetch cart ONLY if logged in
     const fetchCart = async () => {
@@ -38,11 +39,16 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-
     // ➕ Add to cart (login required)
     const addToCart = async (productId, qty = 1) => {
         if (!user?.token) {
             toast.warning("Please login to add items to cart");
+
+            // store action
+            setPendingAdd({ productId, qty });
+
+            // navigate to login
+            navigate("/login");
             return;
         }
 
@@ -62,6 +68,14 @@ export const CartProvider = ({ children }) => {
             setLoadingProductId(null);
         }
     };
+
+    // 🔁 After login, run pending action
+    useEffect(() => {
+        if (user?.token && pendingAdd) {
+            addToCart(pendingAdd.productId, pendingAdd.qty);
+            setPendingAdd(null);
+        }
+    }, [user?.token]);
 
     // ❌ Remove from cart
     const removeFromCart = async (itemId) => {
@@ -96,7 +110,6 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // 🔄 Run when login/logout happens
     useEffect(() => {
         fetchCart();
     }, [user?.token]);
