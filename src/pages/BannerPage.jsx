@@ -19,10 +19,10 @@ function BannerPage() {
       />
 
       {/* ===== MOBILE DARK GRADIENT OVERLAY ===== */}
-      <div className="absolute inset-0 md:hidden bg-gradient-to-b from-black/20 via-black/20 to-black/5"></div>
+      <div className="absolute inset-0 md:hidden bg-gradient-to-b from-black/40 via-black/30 to-black/10"></div>
 
       {/* ===== DESKTOP SOFT OVERLAY ===== */}
-      <div className="absolute inset-0 hidden md:block bg-black/10"></div>
+      <div className="absolute inset-0 hidden md:block bg-black/30"></div>
 
       {/* ===== CONTENT ===== */}
       <div
@@ -36,13 +36,13 @@ function BannerPage() {
         {/* BRAND NAME */}
         <h1
           className="
-    font-serif leading-tight
-    text-5xl sm:text-6xl
-    md:text-7xl lg:text-8xl
-    text-[#D4AF37]
-    drop-shadow-lg
-    font-extrabold
-  "
+            font-serif leading-tight
+            text-5xl sm:text-6xl
+            md:text-7xl lg:text-8xl
+            text-white
+            drop-shadow-[0_6px_25px_rgba(0,0,0,0.8)]
+            font-extrabold
+          "
         >
           Al-Ansar <br />
           <span className="text-[#F5E6C8]">
@@ -53,35 +53,36 @@ function BannerPage() {
         {/* TAGLINE */}
         <p
           className="
-    mt-4 sm:mt-5
-    text-base sm:text-lg
-    md:text-lg
-    text-[#EAD7B7]
-    tracking-wide
-    font-semibold
-  "
+            mt-4 sm:mt-5
+            text-base sm:text-lg
+            md:text-lg
+            text-[#F5E6C8]
+            tracking-wide
+            font-semibold
+            drop-shadow-md
+          "
         >
           Finest Quality Dry Fruits
         </p>
 
         {/* DIVIDER */}
-        <div className="w-24 h-[2px] bg-[#EAD7B7] mx-auto my-6"></div>
+        <div className="w-24 h-[2px] bg-[#F5E6C8] mx-auto my-6"></div>
 
         {/* CTA */}
         <button
           onClick={() => navigate("/home")}
           className="
-    bg-[#0F5132]
-    text-white
-    font-bold
-    px-8 py-3
-    rounded-full
-    text-lg
-    tracking-wide
-    hover:bg-[#0C3F27]
-    transition
-    shadow-2xl
-  "
+            bg-[#0F5132]
+            text-white
+            font-bold
+            px-8 py-3
+            rounded-full
+            text-lg
+            tracking-wide
+            hover:bg-[#0C3F27]
+            transition
+            shadow-2xl
+          "
         >
           Shop Now
         </button>
