@@ -36,16 +36,16 @@ function BannerPage() {
         {/* BRAND NAME */}
         <h1
           className="
-            font-serif leading-tight
-            text-5xl sm:text-6xl
-            md:text-7xl lg:text-8xl
-            text-black md:text-black
-            drop-shadow-lg
-            font-extrabold
-          "
+    font-serif leading-tight
+    text-5xl sm:text-6xl
+    md:text-7xl lg:text-8xl
+    text-[#D4AF37]
+    drop-shadow-lg
+    font-extrabold
+  "
         >
           Al-Ansar <br />
-          <span className="text-[#000000] md:text-[#090500]">
+          <span className="text-[#F5E6C8]">
             Stores
           </span>
         </h1>
@@ -53,35 +53,35 @@ function BannerPage() {
         {/* TAGLINE */}
         <p
           className="
-            mt-4 sm:mt-5
-            text-base sm:text-lg
-            md:text-lg
-            text-black md:text-black
-            tracking-wide
-            font-semibold
-          "
+    mt-4 sm:mt-5
+    text-base sm:text-lg
+    md:text-lg
+    text-[#EAD7B7]
+    tracking-wide
+    font-semibold
+  "
         >
           Finest Quality Dry Fruits
         </p>
 
         {/* DIVIDER */}
-        <div className="w-24 h-[2px] bg-black md:bg-black mx-auto my-6"></div>
+        <div className="w-24 h-[2px] bg-[#EAD7B7] mx-auto my-6"></div>
 
         {/* CTA */}
         <button
           onClick={() => navigate("/home")}
           className="
-            bg-[#021c0e]
-            text-white
-            font-bold
-            px-8 py-3
-            rounded-full
-            text-lg
-            tracking-wide
-            hover:bg-[#243C30]
-            transition
-            shadow-2xl
-          "
+    bg-[#0F5132]
+    text-white
+    font-bold
+    px-8 py-3
+    rounded-full
+    text-lg
+    tracking-wide
+    hover:bg-[#0C3F27]
+    transition
+    shadow-2xl
+  "
         >
           Shop Now
         </button>
