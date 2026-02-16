@@ -27,22 +27,37 @@ function BannerPage() {
       {/* ===== CONTENT ===== */}
       <div
         className="
-          relative z-10 h-full flex flex-col items-center
-          justify-start md:justify-center
-          text-center px-4
-          pt-28 sm:pt-32 md:pt-0
-        "
+    relative z-10 h-full flex flex-col items-center
+    justify-start md:justify-center
+    text-center px-4
+    pt-28 sm:pt-32 md:pt-0
+  "
       >
+        {/* WELCOME TEXT */}
+        <p
+          className="
+      text-sm sm:text-base
+      tracking-[0.3em]
+      uppercase
+      text-[#F5E6C8]
+      font-semibold
+      mb-4
+      drop-shadow-md
+    "
+        >
+          Welcome To
+        </p>
+
         {/* BRAND NAME */}
         <h1
           className="
-            font-serif leading-tight
-            text-5xl sm:text-6xl
-            md:text-7xl lg:text-8xl
-            text-white
-            drop-shadow-[0_6px_25px_rgba(0,0,0,0.8)]
-            font-extrabold
-          "
+      font-serif leading-tight
+      text-5xl sm:text-6xl
+      md:text-7xl lg:text-8xl
+      text-white
+      drop-shadow-[0_6px_25px_rgba(0,0,0,0.8)]
+      font-extrabold
+    "
         >
           Al-Ansar <br />
           <span className="text-[#F5E6C8]">
@@ -53,16 +68,16 @@ function BannerPage() {
         {/* TAGLINE */}
         <p
           className="
-            mt-4 sm:mt-5
-            text-base sm:text-lg
-            md:text-lg
-            text-[#F5E6C8]
-            tracking-wide
-            font-semibold
-            drop-shadow-md
-          "
+      mt-4 sm:mt-5
+      text-base sm:text-lg
+      md:text-lg
+      text-[#F5E6C8]
+      tracking-wide
+      font-semibold
+      drop-shadow-md
+    "
         >
-          Finest Quality Dry Fruits
+          Premium Quality Dry Fruits & Nuts
         </p>
 
         {/* DIVIDER */}
@@ -72,17 +87,17 @@ function BannerPage() {
         <button
           onClick={() => navigate("/home")}
           className="
-            bg-[#0F5132]
-            text-white
-            font-bold
-            px-8 py-3
-            rounded-full
-            text-lg
-            tracking-wide
-            hover:bg-[#0C3F27]
-            transition
-            shadow-2xl
-          "
+      bg-[#0F5132]
+      text-white
+      font-bold
+      px-8 py-3
+      rounded-full
+      text-lg
+      tracking-wide
+      hover:bg-[#0C3F27]
+      transition
+      shadow-2xl
+    "
         >
           Shop Now
         </button>
