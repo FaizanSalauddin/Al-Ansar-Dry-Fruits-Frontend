@@ -360,9 +360,8 @@ const ChatBot = () => {
                                                 )}
                                             </div>
                                         </motion.div>
-
                                         {/* Product slider */}
-                                        {msg.products && msg.products.length > 0 && (
+                                        {Array.isArray(msg.products) && msg.products.length > 0 && (
                                             <motion.div
                                                 initial={{ opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
@@ -391,6 +390,7 @@ const ChatBot = () => {
                                                 ))}
                                             </motion.div>
                                         )}
+
                                     </div>
                                 </motion.div>
                             ))}
