@@ -1,8 +1,7 @@
 import axios from "axios";
 
 const userApi = axios.create({
-  // baseURL: "https://br6r7tz3-5000.inc1.devtunnels.ms/api",
-  baseURL: "https://al-ansar-dry-fruits-backend.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 userApi.interceptors.request.use((req) => {

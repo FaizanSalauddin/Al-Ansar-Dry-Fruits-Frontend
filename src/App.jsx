@@ -36,7 +36,7 @@ import AdminProtectedRoute from "./admin/routes/AdminProtectedRoute";
 import AdminAuthRedirect from "./admin/routes/AdminAuthRedirect";
 
 import AdminProfile from "./admin/pages/AdminProfile";
-
+import ChatBot from "./components/ChatBot";
 
 function App() {
   return (
@@ -85,7 +85,7 @@ function App() {
         </Route>
 
       </Routes>
-
+      <ChatBot />
       {/* ✅ ToastContainer MUST be outside Routes */}
       <ToastContainer
         position="top-center"
