@@ -22,17 +22,23 @@ const ChatBot = () => {
         const savedMessages = localStorage.getItem(CHAT_STORAGE_KEY);
         if (savedMessages) {
             try {
-                // Parse saved messages and convert timestamp strings back to Date objects
+                // Parse saved messages
                 const parsed = JSON.parse(savedMessages);
-                return parsed.map(msg => ({
-                    ...msg,
-                    timestamp: new Date(msg.timestamp)
-                }));
+                // Check if parsed is an array and has items
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    // Convert timestamp strings back to Date objects
+                    return parsed.map(msg => ({
+                        ...msg,
+                        timestamp: new Date(msg.timestamp)
+                    }));
+                }
             } catch (e) {
                 console.error('Failed to parse saved messages:', e);
+                // If error, clear invalid data
+                localStorage.removeItem(CHAT_STORAGE_KEY);
             }
         }
-        // Default initial message if no saved messages
+        // Default initial message if no valid saved messages
         return [{
             text: "Hii! I'm Ansari, your AI assistant for AL-Ansar Stores. How can I help you today?",
             sender: "bot",
@@ -49,8 +55,10 @@ const ChatBot = () => {
         if (savedMessages) {
             try {
                 const parsed = JSON.parse(savedMessages);
-                // Don't show questions if there are more than just the greeting
-                return parsed.length > 1;
+                // Check if parsed is an array before checking length
+                if (Array.isArray(parsed)) {
+                    return parsed.length > 1;
+                }
             } catch (e) {
                 return false;
             }
@@ -82,7 +90,11 @@ const ChatBot = () => {
 
     // Save messages to localStorage whenever they change
     useEffect(() => {
-        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+        try {
+            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+        } catch (e) {
+            console.error('Failed to save messages:', e);
+        }
     }, [messages]);
 
     const scrollToBottom = () => {
@@ -103,6 +115,9 @@ const ChatBot = () => {
     }, []);
 
     const formatTime = (date) => {
+        if (!(date instanceof Date) || isNaN(date)) {
+            return '';
+        }
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
