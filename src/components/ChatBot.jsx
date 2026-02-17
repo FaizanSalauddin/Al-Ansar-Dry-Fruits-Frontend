@@ -29,7 +29,8 @@ const ChatBot = () => {
                     // Convert timestamp strings back to Date objects
                     return parsed.map(msg => ({
                         ...msg,
-                        timestamp: new Date(msg.timestamp)
+                        products: msg.products || [], // Safety check for products
+                        timestamp: msg.timestamp ? new Date(msg.timestamp) : new Date()
                     }));
                 }
             } catch (e) {
@@ -91,7 +92,9 @@ const ChatBot = () => {
     // Save messages to localStorage whenever they change
     useEffect(() => {
         try {
-            localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+            if (Array.isArray(messages)) {
+                localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+            }
         } catch (e) {
             console.error('Failed to save messages:', e);
         }
@@ -156,9 +159,9 @@ const ChatBot = () => {
             // Small delay to show typing indicator
             setTimeout(() => {
                 const botMessage = {
-                    text: data.reply,
+                    text: data.reply || "I'm sorry, I couldn't understand that.",
                     sender: "bot",
-                    products: data.products || [],
+                    products: Array.isArray(data.products) ? data.products : [],
                     timestamp: new Date(),
                 };
                 setMessages((prev) => [...prev, botMessage]);
@@ -267,13 +270,13 @@ const ChatBot = () => {
                         )}
 
                         {/* Notification dot */}
-                        {!open && messages.length > 1 && (
+                        {!open && (messages?.length || 0) > 1 && (
                             <motion.span
                                 initial={{ scale: 0 }}
                                 animate={{ scale: 1 }}
                                 className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"
                             >
-                                {messages.length - 1}
+                                {(messages?.length || 0) - 1}
                             </motion.span>
                         )}
                     </div>
@@ -329,7 +332,7 @@ const ChatBot = () => {
 
                         {/* Messages - WhatsApp style bubbles */}
                         <div className="flex-1 p-3 overflow-y-auto bg-[#e5ddd5] bg-opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(255,255,255,0.2) 2px, transparent 2px)', backgroundSize: '20px 20px' }}>
-                            {messages.map((msg, i) => (
+                            {Array.isArray(messages) && messages.map((msg, i) => (
                                 <motion.div
                                     key={i}
                                     initial={{ opacity: 0, y: 20 }}
@@ -360,7 +363,8 @@ const ChatBot = () => {
                                                 )}
                                             </div>
                                         </motion.div>
-                                        {/* Product slider */}
+
+                                        {/* Product slider - Protected with safety check */}
                                         {Array.isArray(msg.products) && msg.products.length > 0 && (
                                             <motion.div
                                                 initial={{ opacity: 0, x: -20 }}
@@ -390,7 +394,6 @@ const ChatBot = () => {
                                                 ))}
                                             </motion.div>
                                         )}
-
                                     </div>
                                 </motion.div>
                             ))}
@@ -428,7 +431,7 @@ const ChatBot = () => {
                             )}
 
                             {/* Predefined questions - only show at start */}
-                            {!hasShownQuestions && !isTyping && messages.length === 1 && (
+                            {!hasShownQuestions && !isTyping && messages?.length === 1 && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
