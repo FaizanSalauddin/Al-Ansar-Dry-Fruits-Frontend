@@ -296,17 +296,6 @@ const ChatBot = () => {
                                 }}
                             />
                         )}
-
-                        {/* Notification dot */}
-                        {!open && safeMessages.length > 1 && (
-                            <motion.span
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center border-2 border-white"
-                            >
-                                {safeMessages.length - 1}
-                            </motion.span>
-                        )}
                     </div>
                 </motion.div>
             </motion.button>
@@ -340,8 +329,8 @@ const ChatBot = () => {
                                 />
                             </motion.div>
                             <div className="flex-1">
-                                <div className="font-semibold">Ansari <p className="text-xs">Intelligence That Works for You
-                                    </p> </div>
+                                <div className="font-semibold">Ansari <span className="font-semibold">- Your AI Assistant
+                                </span> </div>
                                 <div className="text-xs text-amber-100 flex items-center">
                                     <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
                                     Online
@@ -405,7 +394,10 @@ const ChatBot = () => {
                                                         key={p.id}
                                                         whileHover={{ scale: 1.05, y: -2 }}
                                                         whileTap={{ scale: 0.95 }}
-                                                        onClick={() => navigate(`/product/${p.id}`)}
+                                                        onClick={() => {
+                                                            navigate(`/product/${p.id}`);
+                                                            setOpen(false);
+                                                        }}
                                                         className="min-w-[100px] bg-white border border-amber-100 rounded-lg p-2 cursor-pointer shadow-sm hover:shadow-md transition-all"
                                                     >
                                                         <img
