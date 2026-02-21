@@ -6,6 +6,8 @@ import {
 } from "recharts";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Skeleton from "react-loading-skeleton";
+import "react-loading-skeleton/dist/skeleton.css";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -85,26 +87,41 @@ const AdminDashboard = () => {
   const handleCustomDateChange = useCallback((date) => {
     setCustomDate(date);
   }, []);
-
+  const safeStats = stats || {
+    totalUsers: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    paidOrders: 0,
+    unpaidOrders: 0,
+    todayRevenue: 0,
+    monthlyRevenue: 0,
+    weeklyRevenue: 0,
+    yearlyRevenue: 0,
+    customDateRevenue: 0,
+    dailyData: [],
+    weeklyData: [],
+    monthlyData: [],
+    yearlyData: []
+  };
   // Memoize computed values
   const revenueByTime = useMemo(() => {
-    if (!stats) return 0;
+    if (!safeStats) return 0;
 
     switch (revenueTimeframe) {
       case "today":
-        return stats.todayRevenue || 0;
+        return safeStats.todayRevenue || 0;
       case "thisWeek":
-        return stats.weeklyRevenue || 0;
+        return safeStats.weeklyRevenue || 0;
       case "thisMonth":
-        return stats.monthlyRevenue || 0;
+        return safeStats.monthlyRevenue || 0;
       case "thisYear":
-        return stats.yearlyRevenue || 0;
+        return safeStats.yearlyRevenue || 0;
       case "custom":
-        return stats.customDateRevenue || 0;
+        return safeStats.customDateRevenue || 0;
       default:
-        return stats.totalRevenue;
+        return safeStats.totalRevenue;
     }
-  }, [stats, revenueTimeframe]);
+  }, [safeStats, revenueTimeframe]);
 
   const revenueLabel = useMemo(() => {
     switch (revenueTimeframe) {
@@ -140,24 +157,92 @@ const AdminDashboard = () => {
   }, [revenueTimeframe, customDateSelected, customDate]);
 
   const chartData = useMemo(() => {
-    if (!stats) return [];
+    if (!safeStats) return [];
+
+    const formatDaily = (data = []) =>
+      data.map(item => {
+        const d = new Date(item._id);
+        return {
+          name: d.toLocaleDateString('en-IN', { weekday: 'short' }),
+          fullDate: d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
+          revenue: item.revenue || 0
+        };
+      });
+
+    const formatWeekly = (data = []) => {
+      const now = new Date();
+
+      // helper: get monday of ISO week
+      const getWeekRange = (weekNumber, year) => {
+        const simple = new Date(year, 0, 1 + (weekNumber - 1) * 7);
+        const dow = simple.getDay();
+        const monday = new Date(simple);
+
+        if (dow <= 4) {
+          monday.setDate(simple.getDate() - simple.getDay() + 1);
+        } else {
+          monday.setDate(simple.getDate() + 8 - simple.getDay());
+        }
+
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+
+        return {
+          start: monday,
+          end: sunday
+        };
+      };
+
+      return data.map((item, index) => {
+        const year = now.getFullYear();
+        const { start, end } = getWeekRange(item._id, year);
+
+        const format = (d) =>
+          d.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short"
+          });
+
+        return {
+          name: `Week ${index + 1}`, // clean x-axis
+          dateRange: `${format(start)} - ${format(end)}`,
+          revenue: item.revenue || 0
+        };
+      });
+    };
+
+    const formatMonthly = (data = []) =>
+      data.map(item => {
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        return {
+          name: monthNames[(item._id - 1) % 12],
+          fullMonth: monthNames[(item._id - 1) % 12],
+          revenue: item.revenue || 0
+        };
+      });
+
+    const formatYearly = (data = []) =>
+      data.map(item => ({
+        name: item._id?.toString(),
+        revenue: item.revenue || 0
+      }));
 
     switch (chartTimeframe) {
       case "daily":
-        return stats.dailyData || [];
+        return formatDaily(safeStats.dailyData);
       case "weekly":
-        return stats.weeklyData || [];
+        return formatWeekly(safeStats.weeklyData);
       case "monthly":
-        return stats.monthlyData || [];
+        return formatMonthly(safeStats.monthlyData);
       case "yearly":
-        return stats.yearlyData || [];
+        return formatYearly(safeStats.yearlyData);
       default:
-        return stats.monthlyData || [];
+        return formatMonthly(safeStats.monthlyData);
     }
-  }, [stats, chartTimeframe]);
+  }, [safeStats, chartTimeframe]);
 
   const chartSubtitle = useMemo(() => {
-    if (!stats) return "";
+    if (!safeStats) return "";
 
     switch (chartTimeframe) {
       case "daily":
@@ -202,15 +287,15 @@ const AdminDashboard = () => {
   }, [chartData, chartTimeframe]);
 
   const pieData = useMemo(() => [
-    { name: "Paid", value: stats?.paidOrders || 0, color: "#10B981" },
-    { name: "Unpaid", value: stats?.unpaidOrders || 0, color: "#EF4444" },
-  ], [stats]);
+    { name: "Paid", value: safeStats.paidOrders, color: "#10B981" },
+    { name: "Unpaid", value: safeStats.unpaidOrders || 0, color: "#EF4444" },
+  ], [safeStats]);
 
   const statsCards = useMemo(() => [
-    { label: "Total Users", val: stats?.totalUsers || 0, icon: "👥", color: "blue" },
-    { label: "Products", val: stats?.totalProducts || 0, icon: "📦", color: "indigo" },
-    { label: "Total Orders", val: stats?.totalOrders || 0, icon: "🛒", color: "amber" },
-  ], [stats]);
+    { label: "Total Users", val: safeStats.totalUsers, icon: "👥", color: "blue" },
+    { label: "Products", val: safeStats.totalProducts, icon: "📦", color: "indigo" },
+    { label: "Total Orders", val: safeStats.totalOrders, icon: "🛒", color: "amber" },
+  ], [safeStats]);
 
   const formatCurrency = useCallback((amount) => {
     return new Intl.NumberFormat('en-IN').format(amount);
@@ -223,7 +308,7 @@ const AdminDashboard = () => {
       return (
         <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-200">
           <p className="font-semibold text-gray-800">
-            {data.fullDate || data.dateRange || data.fullMonth || data.name}
+            {data.fullDate || data.dateRange || data.fullMonth || data.name || data._id}
           </p>
           <p className="text-emerald-600 font-bold">₹{payload[0].value}</p>
           <p className="text-xs text-gray-500">
@@ -238,32 +323,21 @@ const AdminDashboard = () => {
   }, [chartTimeframe]);
 
   // Show loading only after timeout to prevent flash
-  if (loadingTimeout) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-emerald-600 font-semibold flex items-center gap-2">
-          <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-          </svg>
-          Loading Futuristic Analytics...
-        </div>
-      </div>
-    );
-  }
+  // if (loadingTimeout) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <div className="text-emerald-600 font-semibold flex items-center gap-2">
+  //         <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+  //           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+  //           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+  //         </svg>
+  //         Loading Futuristic Analytics...
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  if (!stats) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <button
-          onClick={() => fetchDashboard()}
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
-        >
-          Retry Loading
-        </button>
-      </div>
-    );
-  }
+
 
   return (
     <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
@@ -278,9 +352,17 @@ const AdminDashboard = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-10">
         {statsCards.map((item, i) => (
           <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <div className="text-3xl mb-2">{item.icon}</div>
-            <p className="text-sm text-gray-500 font-medium uppercase">{item.label}</p>
-            <h2 className="text-2xl font-bold text-gray-800">{formatCurrency(item.val)}</h2>
+            <div className="text-3xl mb-2">
+              {loading ? <Skeleton width={32} height={32} /> : item.icon}
+            </div>
+
+            <p className="text-sm text-gray-500 font-medium uppercase">
+              {loading ? <Skeleton width={80} /> : item.label}
+            </p>
+
+            <h2 className="text-2xl font-bold text-gray-800">
+              {loading ? <Skeleton width={100} /> : formatCurrency(item.val)}
+            </h2>
           </div>
         ))}
 
@@ -348,7 +430,13 @@ const AdminDashboard = () => {
           )}
 
           <p className="text-sm text-gray-500 font-medium uppercase">{revenueLabel}</p>
-          <h2 className="text-2xl font-bold text-emerald-700">₹{formatCurrency(revenueByTime)}</h2>
+          <h2 className="text-2xl font-bold text-emerald-700">
+            {loading ? (
+              <Skeleton width={120} />
+            ) : (
+              <>₹{formatCurrency(revenueByTime)}</>
+            )}
+          </h2>
 
           {revenueTimeframe === "custom" && !showDatePicker && customDateSelected && (
             <div className="mt-4 space-y-2">
@@ -430,35 +518,38 @@ const AdminDashboard = () => {
           </div>
 
           <div className="w-full min-h-[300px]">
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart
-                data={chartData}
-                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis
-                  dataKey="name"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  interval={0}
-                  minTickGap={8}
-                  angle={0}
-                  height={40}
-                  tick={{ fill: '#6B7280' }}
-                />
-                <YAxis
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tick={{ fill: '#6B7280' }}
-                  tickFormatter={(value) => `₹${formatCurrency(value)}`}
-                />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: "#f9fafb" }} />
-                <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+            {loading ? (
+              <Skeleton height={300} borderRadius={16} />
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis
+                    dataKey="name"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    interval={0}
+                    minTickGap={8}
+                    angle={0}
+                    height={40}
+                    tick={{ fill: '#6B7280' }}
+                  />
+                  <YAxis
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={false}
+                    tick={{ fill: '#6B7280' }}
+                    tickFormatter={(value) => `₹${formatCurrency(value)}`}
+                  />
+                  <Tooltip content={CustomTooltip} cursor={{ fill: "#f9fafb" }} />
+                  <Bar dataKey="revenue" fill="#10B981" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}</div>
         </div>
 
         {/* Payment Status Pie Chart */}
@@ -470,41 +561,45 @@ const AdminDashboard = () => {
             </div>
             <div className="text-right">
               <div className="text-2xl font-bold text-gray-800">
-                {formatCurrency(stats.totalOrders)}
+                {formatCurrency(safeStats.totalOrders)}
               </div>
               <div className="text-xs text-gray-500">Total Orders</div>
             </div>
           </div>
 
           <div className="w-full min-h-[300px]">
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  innerRadius="60%"
-                  outerRadius="80%"
-                  paddingAngle={8}
-                  dataKey="value"
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={entry.color}
-                      strokeWidth={2}
-                      stroke="#fff"
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend verticalAlign="bottom" align="center" iconType="circle" />
-              </PieChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <Skeleton height={300} borderRadius={16} />
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    innerRadius="60%"
+                    outerRadius="80%"
+                    paddingAngle={8}
+                    dataKey="value"
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name}: ${(percent * 100).toFixed(0)}%`
+                    }
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={entry.color}
+                        strokeWidth={2}
+                        stroke="#fff"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" align="center" iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </div>
 
         </div>
@@ -518,16 +613,16 @@ const AdminDashboard = () => {
           <ul className="text-sm text-gray-600 space-y-1">
             <li className="flex justify-between">
               <span>Today's Revenue:</span>
-              <span className="font-medium">₹{formatCurrency(stats.todayRevenue || 0)}</span>
+              <span className="font-medium">₹{formatCurrency(safeStats.todayRevenue || 0)}</span>
             </li>
             <li className="flex justify-between">
               <span>This Month's Revenue:</span>
-              <span className="font-medium">₹{formatCurrency(stats.monthlyRevenue || 0)}</span>
+              <span className="font-medium">₹{formatCurrency(safeStats.monthlyRevenue || 0)}</span>
             </li>
             <li className="flex justify-between">
               <span>Paid Order Percentage:</span>
               <span className="font-medium text-emerald-600">
-                {((stats.paidOrders / stats.totalOrders) * 100 || 0).toFixed(1)}%
+                {((safeStats.paidOrders / safeStats.totalOrders) * 100 || 0).toFixed(1)}%
               </span>
             </li>
           </ul>
@@ -542,11 +637,11 @@ const AdminDashboard = () => {
             </li>
             <li className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#10B981' }}></div>
-              <span>Paid Orders: {formatCurrency(stats.paidOrders)}</span>
+              <span>Paid Orders: {formatCurrency(safeStats.paidOrders)}</span>
             </li>
             <li className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#EF4444' }}></div>
-              <span>Unpaid Orders: {formatCurrency(stats.unpaidOrders)}</span>
+              <span>Unpaid Orders: {formatCurrency(safeStats.unpaidOrders)}</span>
             </li>
           </ul>
         </div>

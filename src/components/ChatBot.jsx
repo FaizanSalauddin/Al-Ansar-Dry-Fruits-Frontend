@@ -340,7 +340,8 @@ const ChatBot = () => {
                                 />
                             </motion.div>
                             <div className="flex-1">
-                                <div className="font-semibold">Ansari</div>
+                                <div className="font-semibold">Ansari <p className="text-xs">Intelligence That Works for You
+                                    </p> </div>
                                 <div className="text-xs text-amber-100 flex items-center">
                                     <span className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
                                     Online
