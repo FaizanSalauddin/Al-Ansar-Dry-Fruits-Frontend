@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
-
+import { useLocation } from "react-router-dom";
 /* USER PAGES */
 import BannerPage from "./pages/BannerPage";
 import Home from "./pages/Home";
@@ -38,7 +38,11 @@ import AdminAuthRedirect from "./admin/routes/AdminAuthRedirect";
 import AdminProfile from "./admin/pages/AdminProfile";
 import ChatBot from "./components/ChatBot";
 
+
 function App() {
+  const location = useLocation();
+  const allowedRoutes = ["/home", "/products", "/product/:id", "/cart", "/checkout", "/my-orders", "/orders/:id", "/order-success", "/place-order", "/profile", "/profile/edit-address"];
+  const showChatbot = allowedRoutes.includes(location.pathname);
   return (
     <>
       <Routes>
@@ -85,8 +89,7 @@ function App() {
         </Route>
 
       </Routes>
-      <ChatBot />
-      {/* ✅ ToastContainer MUST be outside Routes */}
+      {showChatbot && <ChatBot />}
       <ToastContainer
         position="top-center"
         autoClose={2000}
