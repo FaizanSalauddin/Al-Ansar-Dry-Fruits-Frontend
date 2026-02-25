@@ -9,23 +9,21 @@ function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-[#F8F9FA]">
-      {/* SIDEBAR */}
+      
       <AdminSidebar
         isOpen={isSidebarOpen}
         setIsOpen={setIsSidebarOpen}
       />
 
-      {/* MAIN AREA */}
       <div
         className={`
           flex flex-col min-h-screen transition-all duration-300
           ${isSidebarOpen ? "lg:ml-72" : "lg:ml-0"}
         `}
       >
-        {/* TOP BAR */}
+        
         <header className="h-16 bg-white border-b border-gray-200 flex items-center px-4 md:px-8 sticky top-0 z-20">
 
-          {/* DESKTOP TOGGLE BUTTON */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className="hidden lg:block p-2 mr-3 rounded-lg hover:bg-gray-100 transition"
@@ -33,7 +31,6 @@ function AdminLayout() {
             <Menu size={24} />
           </button>
 
-          {/* RIGHT SIDE */}
           <div className="flex items-center gap-6 ml-auto">
             <div className="text-right hidden md:block">
               <p className="text-sm font-bold text-gray-800">
@@ -54,7 +51,6 @@ function AdminLayout() {
           </div>
         </header>
 
-        {/* CONTENT */}
         <main className="flex-1 overflow-y-auto">
           <div className="w-full max-w-[1600px] mx-auto p-4 md:p-8">
             <Outlet />

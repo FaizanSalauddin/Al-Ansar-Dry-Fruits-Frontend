@@ -47,33 +47,53 @@ function AdminOrders() {
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'desc' });
 
   /* ================= FETCH ================= */
+  /* ================= FETCH ================= */
   const fetchOrders = async (activeFilter = filter) => {
     try {
       setLoading(true);
       let url = "/orders";
 
-      if (userFilter) {
-        url += `?user=${userFilter}`;
+      // Create an array to hold query parameters
+      const params = new URLSearchParams();
+
+      // Preserve the user filter from the URL if it exists
+      if (userFilter) params.append("user", userFilter);
+
+      // Map activeFilter to backend query parameters
+      switch (activeFilter) {
+        case "today":
+          params.append("date", "today");
+          break;
+        case "pending":
+        case "delivered":
+        case "cancelled":
+        case "confirmed":
+        case "in-transit": // Added this case
+          params.append("status", activeFilter);
+          break;
+        case "paid":
+          params.append("payment", "paid");
+          break;
+        case "unpaid":
+          params.append("payment", "unpaid");
+          break;
+        default:
+          // 'all' doesn't need extra status params
+          break;
       }
 
+      const queryString = params.toString();
+      const finalUrl = queryString ? `${url}?${queryString}` : url;
 
-      if (activeFilter === "today") url += "?date=today";
-      if (activeFilter === "pending") url += "?status=pending";
-      if (activeFilter === "delivered") url += "?status=delivered";
-      if (activeFilter === "cancelled") url += "?status=cancelled";
-      if (activeFilter === "paid") url += "?payment=paid";
-      if (activeFilter === "unpaid") url += "?payment=unpaid";
-
-      const { data } = await adminApi.get(url);
+      const { data } = await adminApi.get(finalUrl);
       setOrders(data.orders || []);
-    } catch {
+    } catch (err) {
       toast.error("Failed to fetch orders");
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
-
   /* ================= REFRESH FUNCTION ================= */
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -477,12 +497,13 @@ function AdminOrders() {
           <span className="text-sm font-medium text-gray-700">Filter by:</span>
         </div>
 
+        {/* ================= FILTERS UI ================= */}
         <div className="flex flex-wrap gap-2">
           {[
             ["all", "All Orders"],
             ["today", "Today's Orders"],
             ["pending", "Pending"],
-            ["in-transit", "In Transit"],
+            ["in-transit", "In Transit"], // Ensure this matches the status string in your DB
             ["delivered", "Delivered"],
             ["cancelled", "Cancelled"],
             ["paid", "Paid"],
@@ -492,7 +513,7 @@ function AdminOrders() {
               key={key}
               onClick={() => {
                 setFilter(key);
-                fetchOrders(key);
+                fetchOrders(key); // Triggers fetch with the new filter
               }}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${filter === key
                 ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-200"

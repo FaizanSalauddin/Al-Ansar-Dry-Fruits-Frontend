@@ -24,7 +24,7 @@ export const CartProvider = ({ children }) => {
         fetchCart();
     }, [user?.token]);
 
-    // 🔄 Fetch cart ONLY if logged in
+    //  Fetch cart ONLY if logged in
     const fetchCart = async () => {
         if (!user?.token) {
             setCart(null);
@@ -39,7 +39,7 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // ➕ Add to cart (login required)
+    //  Add to cart (login required)
     const addToCart = async (productId, qty = 1) => {
         if (!user?.token) {
             toast.warning("Please login to add items to cart");
@@ -69,7 +69,7 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // 🔁 After login, run pending action
+    //  After login, run pending action
     useEffect(() => {
         if (user?.token && pendingAdd) {
             addToCart(pendingAdd.productId, pendingAdd.qty);
@@ -77,7 +77,7 @@ export const CartProvider = ({ children }) => {
         }
     }, [user?.token]);
 
-    // ❌ Remove from cart
+    //  Remove from cart
     const removeFromCart = async (itemId) => {
         try {
             setLoading(true);
@@ -90,17 +90,17 @@ export const CartProvider = ({ children }) => {
         }
     };
 
-    // 🔼 Increase quantity
+    //  Increase quantity
     const increaseQty = async (itemId) => {
         try {
             const { data } = await userApi.put(`/cart/increase/${itemId}`);
             setCart(data.cart);
         } catch (error) {
-            toast.error("Failed to update quantity");
+            toast.error("Max Quantity Reached");
         }
     };
 
-    // 🔽 Decrease quantity
+    //  Decrease quantity
     const decreaseQty = async (itemId) => {
         try {
             const { data } = await userApi.put(`/cart/decrease/${itemId}`);

@@ -41,7 +41,7 @@ function AddProduct() {
 
   const [errors, setErrors] = useState({});
 
-  /* ================= FETCH CATEGORIES ================= */
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -58,7 +58,7 @@ function AddProduct() {
     fetchCategories();
   }, []);
 
-  /* ================= IMAGE HANDLER ================= */
+
   const imageHandler = (e) => {
     const files = Array.from(e.target.files);
 
@@ -90,7 +90,7 @@ function AddProduct() {
     setImages(images.filter((_, i) => i !== index));
   };
 
-  /* ================= VALIDATION ================= */
+
   const validateForm = () => {
     const newErrors = {};
 

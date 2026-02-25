@@ -16,7 +16,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close mobile sidebar on route change
   useEffect(() => {
     if (window.innerWidth < 1024) {
       setIsOpen(false);
@@ -52,7 +51,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      {/* MOBILE MENU BUTTON */}
       <div className="lg:hidden fixed top-4 left-4 z-50">
         <button
           onClick={() => setIsOpen(!isOpen)}
@@ -62,7 +60,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
         </button>
       </div>
 
-      {/* MOBILE OVERLAY */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
@@ -70,7 +67,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
         />
       )}
 
-      {/* SIDEBAR */}
       <aside
         className={`
           fixed top-0 left-0 h-full z-40
@@ -89,7 +85,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
         `}
       >
         <div className="w-72 h-full flex flex-col mt-10">
-          {/* BRAND */}
+
           <div className="px-6 py-8 border-b border-gray-800">
             <div className="flex items-center gap-3">
               <div className="p-3 bg-emerald-600 rounded-xl mt-10">
@@ -104,7 +100,7 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
             </div>
           </div>
 
-          {/* ADMIN INFO */}
+
           {adminInfo?.admin && (
             <div className="px-6 py-4 border-b border-gray-800">
               <p className="text-white font-semibold">
@@ -116,7 +112,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
             </div>
           )}
 
-          {/* NAVIGATION */}
           <div className="flex-1 overflow-y-auto py-4 px-4 space-y-1">
             {mainNavLinks.map((link) => (
               <NavLink
@@ -133,7 +128,6 @@ const AdminSidebar = ({ isOpen, setIsOpen }) => {
             ))}
           </div>
 
-          {/* LOGOUT */}
           <div className="p-4 mb-10 border-t border-gray-800">
             <button
               onClick={handleLogout}

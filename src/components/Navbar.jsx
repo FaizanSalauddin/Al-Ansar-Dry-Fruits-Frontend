@@ -108,11 +108,9 @@ function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-[#F5EFE6] border-b border-[#e4dccf]">
       <nav className="max-w-7xl mx-auto px-4 py-2">
-
-        {/* ================= DESKTOP ================= */}
+    
         <div className="hidden md:flex items-center justify-between gap-6">
 
-          {/* BRAND */}
           <Link
             to="/home"
             className="text-2xl font-serif font-bold text-[#2F4F3E] whitespace-nowrap"
@@ -120,7 +118,6 @@ function Navbar() {
             Al-Ansar
           </Link>
 
-          {/* SEARCH (CENTER) */}
           {!shouldHideSearch && (
             <form
               onSubmit={handleSearchSubmit}
@@ -136,7 +133,6 @@ function Navbar() {
                 className="w-full outline-none text-sm bg-transparent pr-8"
               />
 
-              {/* ❌ CLEAR BUTTON */}
               {searchValue && (
                 <button
                   type="button"
@@ -149,8 +145,6 @@ function Navbar() {
             </form>
           )}
 
-
-          {/* ICONS */}
           <div className="flex items-center gap-8">
             <Link to="/home" className={`relative flex flex-col items-center ${isActive("/home")}`}>
               <HomeIcon className="w-6 h-6" />
@@ -192,13 +186,10 @@ function Navbar() {
           </div>
         </div>
 
-        {/* ================= MOBILE ================= */}
         <div className="md:hidden">
 
-          {/* TOP ROW */}
           <div className="flex items-center">
 
-            {/* BRAND LEFT */}
             <Link
               to="/home"
               className="text-xl font-serif font-bold text-[#2F4F3E]"
@@ -206,7 +197,6 @@ function Navbar() {
               Al-Ansar
             </Link>
 
-            {/* ICONS RIGHT */}
             <div className="ml-auto flex items-center gap-6">
               <Link to="/home" className={isActive("/home")}>
                 <HomeIcon className="w-6 h-6" />
@@ -237,7 +227,6 @@ function Navbar() {
             </div>
           </div>
 
-          {/* SEARCH BELOW */}
           {!shouldHideSearch && (
             <form
               onSubmit={handleSearchSubmit}
@@ -253,7 +242,6 @@ function Navbar() {
                 className="w-full outline-none text-sm bg-transparent pr-8"
               />
 
-              {/* ❌ CLEAR BUTTON */}
               {searchValue && (
                 <button
                   type="button"

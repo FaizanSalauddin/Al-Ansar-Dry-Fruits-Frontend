@@ -49,7 +49,6 @@ const ProductCard = ({ product }) => {
       onClick={() => navigate(`/product/${product._id}`)}
       className="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-[#2F4F3E]/20"
     >
-      {/* ================= IMAGE SECTION (Perfect 1:1 Ratio) ================= */}
       <div className="relative overflow-hidden">
         <div className="aspect-square bg-gray-50">
           <img
@@ -60,7 +59,6 @@ const ProductCard = ({ product }) => {
           />
         </div>
 
-        {/* Image Navigation Buttons */}
         {product.images.length > 1 && (
           <>
             <button
@@ -78,7 +76,6 @@ const ProductCard = ({ product }) => {
           </>
         )}
 
-        {/* Image Indicator Dots */}
         {product.images.length > 1 && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
             {product.images.map((_, index) => (
@@ -91,7 +88,6 @@ const ProductCard = ({ product }) => {
           </div>
         )}
 
-        {/* Out of Stock Badge */}
         {isOutOfStock && (
           <div className="absolute top-3 left-3">
             <span className="bg-red-600 text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg">
@@ -103,12 +99,11 @@ const ProductCard = ({ product }) => {
 
       {/* ================= CONTENT SECTION ================= */}
       <div className="p-4">
-        {/* Product Name */}
+
         <h3 className="font-semibold text-gray-800 line-clamp-1 text-sm md:text-base group-hover:text-[#2F4F3E] transition-colors">
           {product.name}
         </h3>
 
-        {/* Price Section */}
         <div className="mt-2 flex items-center justify-between">
           <div>
             <p className="text-green-700 font-bold text-lg md:text-xl">

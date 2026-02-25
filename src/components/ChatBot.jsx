@@ -310,7 +310,6 @@ const ChatBot = () => {
                         transition={{ type: "spring", damping: 25, stiffness: 200 }}
                         className="fixed bottom-20 right-5 w-80 h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50 border border-amber-200"
                     >
-                        {/* Header with WhatsApp style */}
                         <div className="bg-gradient-to-r from-amber-700 to-amber-800 text-white p-3 flex items-center space-x-3">
                             <motion.div
                                 initial={{ scale: 0 }}
@@ -348,7 +347,6 @@ const ChatBot = () => {
                             </motion.button>
                         </div>
 
-                        {/* Messages - WhatsApp style bubbles */}
                         <div className="flex-1 p-3 overflow-y-auto bg-[#e5ddd5] bg-opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 10px 10px, rgba(255,255,255,0.2) 2px, transparent 2px)', backgroundSize: '20px 20px' }}>
                             {safeMessages.map((msg, i) => (
                                 <motion.div
@@ -364,7 +362,6 @@ const ChatBot = () => {
                                         </div>
                                     )}
                                     <div className={`max-w-[75%] ${msg.sender === "user" ? "order-1" : "order-2"}`}>
-                                        {/* Message bubble */}
                                         <motion.div
                                             whileHover={{ scale: 1.02 }}
                                             className={`relative p-2 rounded-lg text-sm break-words ${msg.sender === "user"
@@ -382,7 +379,6 @@ const ChatBot = () => {
                                             </div>
                                         </motion.div>
 
-                                        {/* Product slider - ensure products is array */}
                                         {msg.products && Array.isArray(msg.products) && msg.products.length > 0 && (
                                             <motion.div
                                                 initial={{ opacity: 0, x: -20 }}
@@ -419,7 +415,6 @@ const ChatBot = () => {
                                 </motion.div>
                             ))}
 
-                            {/* Typing indicator */}
                             {isTyping && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
@@ -451,7 +446,6 @@ const ChatBot = () => {
                                 </motion.div>
                             )}
 
-                            {/* Predefined questions - only show at start */}
                             {!hasShownQuestions && !isTyping && safeMessages.length === 1 && (
                                 <motion.div
                                     initial={{ opacity: 0 }}
@@ -481,7 +475,6 @@ const ChatBot = () => {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Input - WhatsApp style */}
                         <div className="bg-white border-t border-amber-100 p-2 flex items-center space-x-2">
                             <input
                                 type="text"
