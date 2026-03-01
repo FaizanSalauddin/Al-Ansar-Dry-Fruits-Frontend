@@ -102,6 +102,9 @@ function BannerPage() {
           Shop Now
         </button>
       </div>
+      <div className="absolute bottom-4 left-0 right-0 text-center  font-serif font-extrabold text-white text-xl drop-shadow-[0_0_10px_rgba(255,255,255,0.8)] ">
+        Created By Faizan Salauddin
+      </div>
     </div>
   );
 }

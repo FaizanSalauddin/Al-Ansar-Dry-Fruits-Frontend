@@ -55,7 +55,9 @@ function PlaceOrder() {
     try {
       setIsPlacingOrder(true);
       setLoading(true);
-
+      const button = document.getElementById("orderBtn");
+      button.innerText = "Placing Order...";
+      if (button) button.disabled = true;
       const { data } = await userApi.post("/orders/from-cart", {
         shippingAddress: shippingPayload,
         paymentMethod: "cod",
@@ -178,6 +180,7 @@ function PlaceOrder() {
         {/* 🟢 COD BUTTON */}
         {paymentMethod === "cod" && (
           <button
+            id="orderBtn"
             disabled={loading}
             onClick={placeOrderCOD}
             className="w-full bg-[#2F4F3E] text-white py-3 rounded-lg font-bold"
